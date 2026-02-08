@@ -1,0 +1,333 @@
+#!/bin/bash
+# Serper CLI - Pure bash implementation
+# No external dependencies except curl and jq
+
+set -e
+
+VERSION="1.0.0"
+
+# Check for API key in this order:
+# 1. Global environment variable
+# 2. Local .env file in skill directory
+# 3. .env file in current directory
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_DIR="$(dirname "$SCRIPT_DIR")"
+
+if [ -z "$SERPER_API_KEY" ]; then
+  # Try skill directory .env
+  if [ -f "$SKILL_DIR/.env" ]; then
+    source "$SKILL_DIR/.env"
+  # Try current directory .env
+  elif [ -f ".env" ]; then
+    source ".env"
+  fi
+fi
+
+SERPER_API_KEY="${SERPER_API_KEY:-}"
+
+# User agents for rotation
+USER_AGENTS=(
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
+)
+
+random_user_agent() {
+  echo "${USER_AGENTS[$RANDOM % ${#USER_AGENTS[@]}]}"
+}
+
+random_jitter() {
+  local jitter=$((100 + RANDOM % 400))
+  sleep "0.$(printf "%03d" $jitter)"
+}
+
+anonymize_api_key() {
+  local key="$1"
+  local len=${#key}
+  if [[ $len -le 8 ]]; then
+    echo "***"
+  else
+    echo "${key:0:3}***${key: -3}"
+  fi
+}
+
+retry_request() {
+  local url="$1"
+  local data="$2"
+  local max_attempts="${3:-3}"
+  local verbose="${4:-false}"
+  local attempt=1
+  local delay=1
+  
+  while [ $attempt -le $max_attempts ]; do
+    random_jitter
+    
+    local response
+    local http_code
+    
+    if [ "$verbose" = "true" ]; then
+      # Verbose mode with API key redaction
+      local curl_wrapper=$(mktemp)
+      trap 'rm -f "$curl_wrapper"' EXIT
+      
+      cat > "$curl_wrapper" << 'EOF_WRAPPER'
+#!/bin/bash
+FILTER_KEY="$1"
+shift
+
+anonymize_key_in_output() {
+  local key="$1"
+  local len=${#key}
+  local masked
+  if [[ $len -le 8 ]]; then
+    masked="***"
+  else
+    masked="${key:0:3}***${key: -3}"
+  fi
+  
+  sed "s/$key/$masked/g"
+}
+
+"$@" 2>&1 | anonymize_key_in_output "$FILTER_KEY"
+exit ${PIPESTATUS[0]}
+EOF_WRAPPER
+      
+      chmod +x "$curl_wrapper"
+      
+      response=$("$curl_wrapper" "$SERPER_API_KEY" curl -v -w "\n%{http_code}" -X POST "$url" \
+        -H "X-API-KEY: $SERPER_API_KEY" \
+        -H "Content-Type: application/json" \
+        -H "User-Agent: $(random_user_agent)" \
+        -d "$data")
+      
+      rm -f "$curl_wrapper"
+    else
+      # Silent mode (default)
+      response=$(curl -s -w "\n%{http_code}" -X POST "$url" \
+        -H "X-API-KEY: $SERPER_API_KEY" \
+        -H "Content-Type: application/json" \
+        -H "User-Agent: $(random_user_agent)" \
+        -d "$data" 2>&1)
+    fi
+    
+    http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+    
+    if [ "$http_code" = "200" ]; then
+      echo "$body"
+      return 0
+    fi
+    
+    if [ "$http_code" = "401" ] || [ "$http_code" = "403" ]; then
+      echo "Error: Authentication failed (HTTP $http_code) - API key: $(anonymize_api_key "$SERPER_API_KEY")" >&2
+      return 1
+    fi
+    
+    if [ $attempt -lt $max_attempts ]; then
+      echo "Attempt $attempt failed (HTTP $http_code). Retrying in ${delay}s..." >&2
+      sleep $delay
+      delay=$((delay * 2))
+    fi
+    
+    attempt=$((attempt + 1))
+  done
+  
+  echo "Failed after $max_attempts attempts" >&2
+  return 1
+}
+
+cmd_search() {
+  local query=""
+  local num=10
+  local gl="us"
+  local hl="en"
+  local location=""
+  local page=1
+  local output_json=false
+  local retries=3
+  local verbose=false
+  
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -n|--num) num="$2"; shift 2 ;;
+      -g|--gl) gl="$2"; shift 2 ;;
+      -l|--hl) hl="$2"; shift 2 ;;
+      --location) location="$2"; shift 2 ;;
+      --page) page="$2"; shift 2 ;;
+      -j|--json) output_json=true; shift ;;
+      --retries) retries="$2"; shift 2 ;;
+      -v|--verbose) verbose=true; shift ;;
+      -h|--help)
+        echo "Usage: serper search <query> [options]"
+        echo "Options: -n/--num, -g/--gl, -l/--hl, --location, --page, -j/--json, --retries, -v/--verbose"
+        return 0
+        ;;
+      *) query="$1"; shift ;;
+    esac
+  done
+  
+  if [ -z "$query" ]; then
+    echo "Error: Query is required" >&2
+    return 1
+  fi
+  
+  if [ "$verbose" = true ]; then
+    echo "INFO: API Key: $(anonymize_api_key "$SERPER_API_KEY")" >&2
+    echo "INFO: Sending search request (credentials redacted in output)..." >&2
+  fi
+  
+  local json_data="{\"q\":\"$query\",\"num\":$num,\"gl\":\"$gl\",\"hl\":\"$hl\",\"page\":$page"
+  [ -n "$location" ] && json_data="$json_data,\"location\":\"$location\""
+  json_data="$json_data}"
+  
+  local result
+  result=$(retry_request "https://google.serper.dev/search" "$json_data" "$retries" "$verbose") || return $?
+  
+  if [ "$output_json" = true ]; then
+    echo "$result"
+  else
+    echo -e "\n🔍 Search: \"$query\"\n"
+    echo "$result" | jq -r '.organic[]? | "\(.position). \(.title)\n   \(.link)\n   \(.snippet)\n"' 2>/dev/null || echo "$result"
+  fi
+}
+
+cmd_scrape() {
+  local url=""
+  local include_markdown=false
+  local output_json=false
+  local retries=3
+  local verbose=false
+  local offset=0
+  local lines=0
+  
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -m|--markdown) include_markdown=true; shift ;;
+      -j|--json) output_json=true; shift ;;
+      --retries) retries="$2"; shift 2 ;;
+      -v|--verbose) verbose=true; shift ;;
+      --offset) offset="$2"; shift 2 ;;
+      --lines) lines="$2"; shift 2 ;;
+      -l|--limit) lines="$2"; shift 2 ;;
+      -h|--help)
+        echo "Usage: serper scrape <url> [options]"
+        echo "Options:"
+        echo "  -m, --markdown          Include markdown output"
+        echo "  -j, --json              Output raw JSON"
+        echo "  --offset <n>            Start from line n (0-indexed)"
+        echo "  --lines <n>             Return n lines"
+        echo "  -l, --limit <n>         Alias for --lines"
+        echo "  --retries <n>           Retry attempts (default: 3)"
+        echo "  -v, --verbose           Verbose output"
+        echo ""
+        echo "Examples:"
+        echo "  serper scrape \"https://example.com\" --lines 50"
+        echo "  serper scrape \"https://example.com\" --offset 100 --lines 50"
+        echo "  serper scrape \"https://example.com\" --markdown --offset 0 --limit 100"
+        return 0
+        ;;
+      *) url="$1"; shift ;;
+    esac
+  done
+  
+  if [ -z "$url" ]; then
+    echo "Error: URL is required" >&2
+    return 1
+  fi
+  
+  if [ "$verbose" = true ]; then
+    echo "INFO: API Key: $(anonymize_api_key "$SERPER_API_KEY")" >&2
+    echo "INFO: Sending scrape request (credentials redacted in output)..." >&2
+    [ $offset -gt 0 ] && echo "INFO: Offset: $offset lines" >&2
+    [ $lines -gt 0 ] && echo "INFO: Limit: $lines lines" >&2
+  fi
+  
+  local json_data="{\"url\":\"$url\""
+  [ "$include_markdown" = true ] && json_data="$json_data,\"includeMarkdown\":true"
+  json_data="$json_data}"
+  
+  local result
+  result=$(retry_request "https://scrape.serper.dev" "$json_data" "$retries" "$verbose") || return $?
+  
+  if [ "$output_json" = true ]; then
+    echo "$result"
+  else
+    echo -e "\n📄 Scraped: $url\n"
+    
+    # Extract text and/or markdown
+    local text=$(echo "$result" | jq -r '.text // ""' 2>/dev/null)
+    local markdown=$(echo "$result" | jq -r '.markdown // ""' 2>/dev/null)
+    
+    # Determine which content to use
+    local content="$text"
+    if [ "$include_markdown" = true ] && [ -n "$markdown" ]; then
+      content="$markdown"
+    fi
+    
+    # Apply offset and lines
+    if [ $offset -gt 0 ] || [ $lines -gt 0 ]; then
+      local total_lines=$(echo "$content" | wc -l)
+      
+      if [ "$verbose" = true ]; then
+        echo "INFO: Total lines: $total_lines" >&2
+        echo "INFO: Returning lines from $((offset+1)) to $((offset+lines))" >&2
+      fi
+      
+      if [ $lines -gt 0 ]; then
+        # Offset + limit
+        echo "$content" | tail -n +$((offset + 1)) | head -n "$lines"
+      else
+        # Offset only (all lines from offset)
+        echo "$content" | tail -n +$((offset + 1))
+      fi
+    else
+      # No pagination, return all (with legacy truncation warning)
+      local content_length=${#content}
+      if [ $content_length -gt 2000 ]; then
+        echo "$content" | head -c 2000
+        echo -e "\n... (truncated, use --lines or --offset for pagination)"
+      else
+        echo "$content"
+      fi
+    fi
+  fi
+}
+
+main() {
+  local command="${1:-}"
+  shift || true
+  
+  # Allow --version and --help without API key
+  case "$command" in
+    -v|--version)
+      echo "serper version $VERSION"
+      return 0
+      ;;
+    -h|--help|"")
+      echo "Serper CLI - Google Search & Web Scraping"
+      echo "Usage: serper <command> [options]"
+      echo "Commands: search <query>, scrape <url>"
+      echo "Examples:"
+      echo "  serper search \"Malaysia news\" --gl my --hl en"
+      echo "  serper scrape \"https://example.com\" --markdown"
+      return 0
+      ;;
+  esac
+  
+  # Check API key only for actual commands
+  if [ -z "$SERPER_API_KEY" ]; then
+    echo "Error: SERPER_API_KEY environment variable is required" >&2
+    echo "Get a free API key at: https://serper.dev" >&2
+    exit 1
+  fi
+  
+  case "$command" in
+    search) cmd_search "$@" ;;
+    scrape) cmd_scrape "$@" ;;
+    *) echo "Error: Unknown command '$command'" >&2; exit 1 ;;
+  esac
+}
+
+main "$@"

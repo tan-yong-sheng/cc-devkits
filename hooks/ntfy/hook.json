@@ -1,0 +1,61 @@
+{
+    "description": "Claude Code hook to report Claude Code session results to nfty push notification",
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/home/node/.claude/hooks/notify-user/notify_hook.sh --priority default --emoji rocket --title \"Claude Code - Session Started\" --message \"New Claude Code session has been started\"",
+                        "timeout": 30
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/home/node/.claude/hooks/notify-user/notify_hook.sh --priority high --emoji white_check_mark --title \"Claude Code - Task Complete\" --message \"Task is completed\"",
+                        "timeout": 30
+                    }
+                ]
+            }
+        ],
+        "Notification": [
+            {
+                "matcher": "permission_prompt",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/home/node/.claude/hooks/notify-user/notify_hook.sh --priority high --emoji shark --title \"Claude Code - Permission needed\" --message \"Permission is needed to proceed with next step\"",
+                        "timeout": 30
+                    }
+                ]
+            }
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "ExitPlanMode",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/home/node/.claude/hooks/notify-user/notify_hook.sh --priority high --emoji clipboard --title \"Claude Code - Plan Ready\" --message \"Plan is ready for review\"",
+                        "timeout": 30
+                    }
+                ]
+            },
+            {
+                "matcher": "AskUserQuestion",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/home/node/.claude/hooks/notify-user/notify_hook.sh --priority high --emoji question --title \"Claude Code - Input Needed\" --message \"Claude Code asks you question and needs your input\"",
+                        "timeout": 30
+                    }
+                ]
+            }
+        ]
+    }
+}
