@@ -1,0 +1,41 @@
+{
+  "name": "cc-devkits",
+  "version": "1.0.0",
+  "description": "Claude Code plugin with ntfy hooks, serper web search/skills, and ai-vision-mcp integration",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/**/*.ts",
+    "test": "echo \"Tests not implemented yet\"",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "ntfy",
+    "serper",
+    "mcp"
+  ],
+  "author": "tan-yong-sheng",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tan-yong-sheng/cc-devkits"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

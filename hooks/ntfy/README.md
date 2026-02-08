@@ -1,90 +1,92 @@
-# Claude Code ntfy Hooks - Bash Version
+# Claude Code ntfy Hooks - TypeScript Version
 
 ## 📊 Overview
 
-Pure bash implementation of Claude Code ntfy hooks. No Node.js dependencies - just bash and curl!
+TypeScript implementation of Claude Code ntfy hooks. Built with Node.js and compiled to JavaScript.
 
-**Advantages:**
-- ✅ No Node.js required
-- ✅ Pure bash (portable)
-- ✅ Faster startup
-- ✅ Simpler dependencies (just curl)
-- ✅ Easy to debug
+**Features:**
+- ✅ TypeScript for type safety
+- ✅ Reads Claude Code context from stdin (cwd, session_id, model)
+- ✅ Supports emojis, priority, tags, click actions
+- ✅ Uses NTFY_API_KEY for authentication
+- ✅ Configurable timeout
+- ✅ Deduplication support (12-second cooldown)
+- ✅ Proper error handling
 
 ---
 
 ## 📁 Files
 
-### Hook Script (2.9KB)
-**Path:** `~/.claude/hooks/notify-bash/notify_hook.sh`
+### Hook Script
+**Source:** `src/hooks/ntfy/notify.ts`
+**Compiled:** `dist/hooks/ntfy/notify.js`
 
-**Dependencies:** bash, curl (built-in on most systems)
+**Dependencies:** Node.js 18+, npm
 
 **Features:**
 - Sends notifications to ntfy.sh
+- Reads Claude Code session context from stdin
 - Supports emojis, priority, tags, click actions
+- Deduplication prevents duplicate notifications
 - Uses NTFY_API_KEY for authentication
-- Configurable timeout
-- Proper error handling
-
----
-
-### Settings File (1.5KB)
-**Path:** `~/.config/claude/settings.json`
-
-**All hooks use bash commands:**
-```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh [options]
-```
 
 ---
 
 ## 🎯 Configured Hooks
 
-### 1. Stop Event - Task Complete
+### 1. SessionStart - Session Started
 ```json
 {
   "type": "command",
-  "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji white_check_mark --title \"Claude Code - Task Complete\" --message \"Task is completed\"",
+  "command": "node dist/hooks/ntfy/notify.js --priority default --emoji rocket --title \"Claude Code - Session Started\" --message \"New Claude Code session has been started\"",
   "timeout": 30
 }
 ```
 
-### 2. Notification Event - Permission Needed
+### 2. Stop - Task Complete
+```json
+{
+  "type": "command",
+  "command": "node dist/hooks/ntfy/notify.js --priority high --emoji white_check_mark --title \"Claude Code - Task Complete\" --message \"Task is completed\"",
+  "timeout": 30
+}
+```
+
+### 3. Notification - Permission Needed
 ```json
 {
   "matcher": "permission_prompt",
   "hooks": [
     {
       "type": "command",
-      "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji shark --title \"Claude Code - Permission needed\" --message \"Permission is needed to proceed with next step\"",
+      "command": "node dist/hooks/ntfy/notify.js --priority high --emoji shark --title \"Claude Code - Permission needed\" --message \"Permission is needed to proceed with next step\"",
       "timeout": 30
     }
   ]
 }
 ```
 
-### 3. PreToolUse Event - Plan Ready
+### 4. PreToolUse - Plan Ready
 ```json
 {
   "matcher": "ExitPlanMode",
   "hooks": [
     {
       "type": "command",
-      "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji clipboard --title \"Claude Code - Plan Ready\" --message \"Plan is ready for review\""
+      "command": "node dist/hooks/ntfy/notify.js --priority high --emoji clipboard --title \"Claude Code - Plan Ready\" --message \"Plan is ready for review\""
     }
   ]
 }
 ```
 
-### 4. PreToolUse Event - Input Needed
+### 5. PreToolUse - Input Needed
 ```json
 {
   "matcher": "AskUserQuestion",
   "hooks": [
     {
       "type": "command",
-      "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji question --title \"Claude Code - Input Needed\" --message \"Claude Code asks you question and needs your input\""
+      "command": "node dist/hooks/ntfy/notify.js --priority high --emoji question --title \"Claude Code - Input Needed\" --message \"Claude Code asks you question and needs your input\""
     }
   ]
 }
@@ -94,10 +96,17 @@ bash ~/.claude/hooks/notify-bash/notify_hook.sh [options]
 
 ## 📖 Usage
 
+### Build
+
+```bash
+npm install
+npm run build
+```
+
 ### Command Line
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Title" \
   --message "Message" \
   [options]
@@ -115,6 +124,8 @@ bash ~/.claude/hooks/notify-bash/notify_hook.sh \
 | `--click <url>` | No | URL to open on click | `--click "https://example.com"` |
 | `--attach <url>` | No | Attachment URL | `--attach "https://example.com/file.pdf"` |
 | `--timeout <number>` | No | Request timeout in seconds (default: 10) | `--timeout 30` |
+| `--include-cwd` | No | Include project path in message | `--include-cwd` |
+| `--no-cwd` | No | Don't include project path | `--no-cwd` |
 
 ---
 
@@ -141,106 +152,30 @@ NTFY_TOKEN="..."                            # Falls back to NTFY_API_KEY
 
 ## 🧪 Testing
 
-### Run All Tests
+### Build First
 
 ```bash
-bash ~/.claude/hooks/notify-bash/test_hooks.sh
-```
-
-**Expected output:**
-```
-🧪 Testing Claude Code ntfy Hooks (Bash version)
-
-📍 Using ntfy server: https://ntfy.tanyongsheng.site
-📍 Using topic: openclaw
-
-1️⃣ Testing 'Task Complete' hook...
-[ntfy] Notification sent successfully (200)
-✅ Test 1 passed
-
-2️⃣ Testing 'Permission Needed' hook...
-[ntfy] Notification sent successfully (200)
-✅ Test 2 passed
-
-3️⃣ Testing 'Plan Ready' hook...
-[ntfy] Notification sent successfully (200)
-✅ Test 3 passed
-
-4️⃣ Testing 'Input Needed' hook...
-[ntfy] Notification sent successfully (200)
-✅ Test 4 passed
-
-🎉 All tests complete!
+npm run build
 ```
 
 ### Test Individual Notification
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Test" \
   --message "This is a test" \
   --priority high \
   --emoji tada
 ```
 
----
+### Test with Project Context
 
-## 🔍 Script Implementation Details
-
-### How It Works
-
-1. **Parse arguments** using bash `case` statement
-2. **Validate** required parameters (title, message)
-3. **Build curl headers** array with all options
-4. **Send HTTP POST** to ntfy.sh using curl
-5. **Check response** HTTP status code
-6. **Exit** with 0 (success) or 1 (failure)
-
-### Key Features
-
-**Robust argument parsing:**
 ```bash
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --title) TITLE="$2"; shift 2 ;;
-    --message) MESSAGE="$2"; shift 2 ;;
-    --priority) PRIORITY="$2"; shift 2 ;;
-    ...
-  esac
-done
-```
-
-**Header building:**
-```bash
-HEADERS=()
-HEADERS+=("-H" "Title: $TITLE")
-HEADERS+=("-H" "Priority: $PRIORITY")
-
-if [ -n "$EMOJI" ]; then
-  HEADERS+=("-H" "Tags: $EMOJI")
-fi
-```
-
-**Curl request:**
-```bash
-curl -s -w "\n%{http_code}" \
-  --max-time "$TIMEOUT" \
-  "${HEADERS[@]}" \
-  -d "$MESSAGE" \
-  "$NTFY_URL/$NTFY_TOPIC"
-```
-
-**Response validation:**
-```bash
-HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-
-if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-  echo "[ntfy] Notification sent successfully ($HTTP_CODE)" >&2
-  exit 0
-else
-  echo "[ntfy] Error: HTTP $HTTP_CODE" >&2
-  exit 1
-fi
+echo '{"cwd":"/home/user/myproject","session_id":"abc123","model":"claude-opus"}' | \
+  node dist/hooks/ntfy/notify.js \
+  --title "Test with Context" \
+  --message "Testing context" \
+  --include-cwd
 ```
 
 ---
@@ -252,12 +187,23 @@ fi
 ```json
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/cc-devkits/dist/hooks/ntfy/notify.js --priority default --emoji rocket --title \"Claude Code - Session Started\" --message \"New Claude Code session has been started\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji white_check_mark --title \"Claude Code - Task Complete\" --message \"Task is completed\"",
+            "command": "node /path/to/cc-devkits/dist/hooks/ntfy/notify.js --priority high --emoji white_check_mark --title \"Claude Code - Task Complete\" --message \"Task is completed\"",
             "timeout": 30
           }
         ]
@@ -269,7 +215,7 @@ fi
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji shark --title \"Claude Code - Permission needed\" --message \"Permission is needed to proceed with next step\"",
+            "command": "node /path/to/cc-devkits/dist/hooks/ntfy/notify.js --priority high --emoji shark --title \"Claude Code - Permission needed\" --message \"Permission is needed to proceed with next step\"",
             "timeout": 30
           }
         ]
@@ -281,7 +227,7 @@ fi
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji clipboard --title \"Claude Code - Plan Ready\" --message \"Plan is ready for review\""
+            "command": "node /path/to/cc-devkits/dist/hooks/ntfy/notify.js --priority high --emoji clipboard --title \"Claude Code - Plan Ready\" --message \"Plan is ready for review\""
           }
         ]
       },
@@ -290,14 +236,11 @@ fi
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/notify-bash/notify_hook.sh --priority high --emoji question --title \"Claude Code - Input Needed\" --message \"Claude Code asks you question and needs your input\""
+            "command": "node /path/to/cc-devkits/dist/hooks/ntfy/notify.js --priority high --emoji question --title \"Claude Code - Input Needed\" --message \"Claude Code asks you question and needs your input\""
           }
         ]
       }
     ]
-  },
-  "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true
   }
 }
 ```
@@ -309,7 +252,7 @@ fi
 ### Basic Notification
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Hello" \
   --message "World"
 ```
@@ -317,7 +260,7 @@ bash ~/.claude/hooks/notify-bash/notify_hook.sh \
 ### With Emoji and Priority
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Build Complete" \
   --message "Your build finished successfully" \
   --priority high \
@@ -327,7 +270,7 @@ bash ~/.claude/hooks/notify-bash/notify_hook.sh \
 ### With Click Action
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Pull Request" \
   --message "New PR #123 opened" \
   --emoji bell \
@@ -337,7 +280,7 @@ bash ~/.claude/hooks/notify-bash/notify_hook.sh \
 ### With Tags
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Deployment" \
   --message "Production deployed" \
   --tags "deploy,production" \
@@ -347,7 +290,7 @@ bash ~/.claude/hooks/notify-bash/notify_hook.sh \
 ### With Attachment
 
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Report Ready" \
   --message "Monthly report generated" \
   --attach "https://example.com/report.pdf" \
@@ -367,9 +310,21 @@ cat ~/.config/claude/settings.json | jq .
 
 **Test hook manually:**
 ```bash
-bash ~/.claude/hooks/notify-bash/notify_hook.sh \
+node dist/hooks/ntfy/notify.js \
   --title "Test" \
   --message "Test"
+```
+
+### Build Errors
+
+**Install dependencies:**
+```bash
+npm install
+```
+
+**Rebuild:**
+```bash
+npm run clean && npm run build
 ```
 
 ### Notification Not Received
@@ -389,28 +344,6 @@ curl -H "Authorization: Bearer $NTFY_API_KEY" \
   https://ntfy.tanyongsheng.site/openclaw
 ```
 
-### Debug Mode
-
-**Run with verbose output:**
-```bash
-bash -x ~/.claude/hooks/notify-bash/notify_hook.sh \
-  --title "Test" \
-  --message "Test" 2>&1
-```
-
----
-
-## ✅ Advantages vs JavaScript Version
-
-| Feature | Bash ✅ | JavaScript ❌ |
-|---------|---------|---------------|
-| Dependencies | curl only | Node.js required |
-| Startup time | Instant | ~100ms Node.js startup |
-| Size | 2.9KB | 4KB |
-| Debugging | `bash -x` | Need Node.js debugger |
-| Portability | Works everywhere | Needs Node.js installed |
-| Simplicity | Pure bash | Async/promises complexity |
-
 ---
 
 ## 🚀 Usage with Claude Code
@@ -426,6 +359,7 @@ claude -c -p "create a REST API"
 ```
 
 **Hooks will fire automatically:**
+- Session Start → 🚀 Session Started
 - Stop → ✅ Task Complete
 - Permission prompt → 🦈 Permission needed
 - Plan ready → 📋 Plan Ready
@@ -443,13 +377,12 @@ claude -c -p "create a REST API"
 - https://ntfy.sh/docs/publish/
 
 **Files:**
-- Hook script: `~/.claude/hooks/notify-bash/notify_hook.sh`
-- Settings: `~/.config/claude/settings.json`
-- Test script: `~/.claude/hooks/notify-bash/test_hooks.sh`
+- Source: `src/hooks/ntfy/notify.ts`
+- Compiled: `dist/hooks/ntfy/notify.js`
+- Hook config: `hooks/ntfy/hook.json`
 
 ---
 
-**Created:** 2026-02-01  
-**Version:** Bash (pure shell)  
-**Status:** ✅ Production ready  
-**Test Status:** ✅ All 4 hooks passing
+**Created:** 2026-02-08
+**Version:** TypeScript (Node.js)
+**Status:** ✅ Production ready

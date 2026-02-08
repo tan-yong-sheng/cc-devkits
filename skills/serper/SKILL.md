@@ -1,30 +1,28 @@
 ---
 name: serper
-description: Google Search and web scraping via Serper API - pure bash script with retry and jitter. Use when you need to search Google, scrape webpages, or gather information from the web. Supports advanced search operators (site:, filetype:, date filters), regional/language targeting, and markdown extraction.
+description: Google Search and web scraping via Serper API - TypeScript implementation with retry and jitter. Use when you need to search Google, scrape webpages, or gather information from the web. Supports advanced search operators (site:, filetype:, date filters), regional/language targeting, and markdown extraction.
 homepage: https://serper.dev
-metadata: {"openclaw":{"emoji":"🔍","requires":{"bins":["curl","jq"],"env":["SERPER_API_KEY"]},"primaryEnv":"SERPER_API_KEY"}}
+metadata: {"openclaw":{"emoji":"🔍","requires":{"bins":["node"],"env":["SERPER_API_KEY"]},"primaryEnv":"SERPER_API_KEY"}}
 ---
 
 # 🔍 Serper
 
 *Search Google, Scrape web, Go fast*
 
-Pure bash Google Search and web scraping with built-in retry, exponential backoff, jitter, and user-agent rotation.
+TypeScript Google Search and web scraping with built-in retry, exponential backoff, jitter, and user-agent rotation.
 
 ## Setup
 
 **REOMMENDED: Define SERPER_API_KEY as global environment variable so we could directly execute the script**
 ```bash
-cd skills/serper
-chmod +x scripts/serper.sh
+npm install
+npm run build
 ```
 
 Get your API key from https://serper.dev (2500 free searches/month).
 
 **API Key Priority:**
 1. Global environment variable (`$SERPER_API_KEY`)
-2. Local `.env` in skill directory
-3. `.env` in current directory
 
 **Security Note:** Option 1 (global env) is more secure as the key never appears in command history or chat transcripts.
 
@@ -139,8 +137,8 @@ serper scrape "https://blog.com" --json | jq -r '.text'
 - ✅ Random jitter (100-500ms)
 - ✅ User-Agent rotation (4 realistic User Agents)
 - ✅ Smart error handling (auth errors don't retry)
-- ✅ Pure bash (no npm, no TypeScript)
-- ✅ Color output (ANSI terminals)
+- ✅ TypeScript with type safety
+- ✅ Compiled to JavaScript for Node.js
 
 ## Rate Limits
 
