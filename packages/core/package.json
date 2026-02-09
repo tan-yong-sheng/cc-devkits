@@ -1,6 +1,6 @@
 {
   "name": "@tan-yong-sheng/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Core utilities for cc-devkits - HTTP, retry, CLI parsing, and more",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
