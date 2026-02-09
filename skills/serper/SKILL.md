@@ -13,18 +13,41 @@ TypeScript Google Search and web scraping with built-in retry, exponential backo
 
 ## Setup
 
-**REOMMENDED: Define SERPER_API_KEY as global environment variable so we could directly execute the script**
+### Option 1: Install from GitHub Packages (Recommended)
+
+Install globally for use anywhere:
+
+```bash
+# Configure npm to use GitHub Packages for @tan-yong-sheng scope
+npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
+
+# Authenticate (use your GitHub Personal Access Token with read:packages scope)
+npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
+
+# Install globally
+npm install -g @tan-yong-sheng/serper
+```
+
+Now `serper` command is available globally!
+
+### Option 2: Build from Source
+
 ```bash
 npm install
 npm run build
 ```
 
+### API Key Setup
+
 Get your API key from https://serper.dev (2500 free searches/month).
 
-**API Key Priority:**
-1. Global environment variable (`$SERPER_API_KEY`)
+**RECOMMENDED: Define SERPER_API_KEY as global environment variable:**
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export SERPER_API_KEY="your-api-key-here"
+```
 
-**Security Note:** Option 1 (global env) is more secure as the key never appears in command history or chat transcripts.
+**Security Note:** Using global environment variables is more secure as the key never appears in command history or chat transcripts.
 
 ## Quick Start
 
