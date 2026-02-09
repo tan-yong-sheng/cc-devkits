@@ -18,13 +18,20 @@ All packages are published to **GitHub Packages** under the `@tan-yong-sheng` sc
 - `@tan-yong-sheng/serper` - Serper API wrapper (Google Search & web scraping)
 - `@tan-yong-sheng/ntfy` - ntfy notification client
 
+### Important: GitHub Packages Authentication
+
+**⚠️ GitHub Packages requires authentication even for public packages.** This is a GitHub limitation, not a repository setting.
+
+Users must authenticate once with a Personal Access Token that has `read:packages` scope.
+
 ### Installing from GitHub Packages
 
 ```bash
-# Configure npm to use GitHub Packages for @tan-yong-sheng scope
+# One-time setup
 npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
 
-# Authenticate with GitHub (requires Personal Access Token with read:packages scope)
+# Authenticate (use Personal Access Token as password)
+# Get token: https://github.com/settings/tokens/new (select 'read:packages')
 npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
 
 # Install packages globally for CLI usage
@@ -33,6 +40,21 @@ npm install -g @tan-yong-sheng/ntfy
 
 # Or install locally in a project
 npm install @tan-yong-sheng/core @tan-yong-sheng/serper @tan-yong-sheng/ntfy
+```
+
+### Alternative: Build from Source
+
+For personal setup without authentication, users can build from source:
+
+```bash
+git clone https://github.com/tan-yong-sheng/cc-devkits.git
+cd cc-devkits
+npm install
+npm run build:all
+
+# Link for global CLI usage
+cd packages/serper && npm link
+cd ../ntfy && npm link
 ```
 
 ## Directory Structure

@@ -13,28 +13,53 @@ TypeScript Google Search and web scraping with built-in retry, exponential backo
 
 ## Setup
 
-### Option 1: Install from GitHub Packages (Recommended)
+### Install from GitHub Packages
 
-Install globally for use anywhere:
+**Note:** GitHub Packages requires authentication even for public packages. This is a one-time setup.
 
+#### One-Time Setup (5 minutes)
+
+1. **Create GitHub Personal Access Token** (if you don't have one):
+   - Go to: https://github.com/settings/tokens/new
+   - Token name: `npm-packages` (or any name you prefer)
+   - Select scope: ☑️ `read:packages`
+   - Click "Generate token"
+   - **Copy the token** (you won't see it again!)
+
+2. **Configure npm**:
 ```bash
-# Configure npm to use GitHub Packages for @tan-yong-sheng scope
+# Set registry for @tan-yong-sheng scope
 npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
 
-# Authenticate (use your GitHub Personal Access Token with read:packages scope)
+# Login (use your GitHub username and the token as password)
 npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
+```
 
-# Install globally
+3. **Install globally**:
+```bash
 npm install -g @tan-yong-sheng/serper
 ```
 
-Now `serper` command is available globally!
+4. **Verify**:
+```bash
+serper --help
+```
 
-### Option 2: Build from Source
+✅ Done! The `serper` command is now available globally.
+
+### Build from Source (Alternative)
+
+If you prefer not to authenticate with GitHub Packages:
 
 ```bash
+git clone https://github.com/tan-yong-sheng/cc-devkits.git
+cd cc-devkits
 npm install
-npm run build
+npm run build:all
+
+# Link for global use
+cd packages/serper
+npm link
 ```
 
 ### API Key Setup

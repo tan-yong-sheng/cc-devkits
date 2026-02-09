@@ -14,27 +14,46 @@ All packages are available at: https://github.com/tan-yong-sheng?tab=packages
 
 ## 🚀 Quick Start - Global Installation
 
-### Step 1: Configure npm for GitHub Packages
+**⚠️ Important:** GitHub Packages requires authentication even for public repositories. This is a GitHub platform limitation and cannot be disabled.
+
+### Why Authentication is Required
+
+GitHub Packages differs from npmjs.org:
+- **npmjs.org**: Public packages can be installed without authentication
+- **GitHub Packages**: ALL packages require authentication (even public ones)
+
+This is designed for enterprise/private use cases. For truly public packages, use npmjs.org.
+
+### One-Time Setup
+
+#### Step 1: Create Personal Access Token
+
+1. Visit: https://github.com/settings/tokens/new
+2. Token name: `npm-packages` (or any name)
+3. Expiration: Choose duration (90 days, 1 year, or no expiration)
+4. Select scopes:
+   - ☑️ `read:packages` (for installing packages)
+   - ☑️ `write:packages` (only if you need to publish)
+5. Click "Generate token"
+6. **Copy the token immediately** (you won't see it again!)
+
+#### Step 2: Configure npm for GitHub Packages
 
 ```bash
 # Set registry for @tan-yong-sheng scope
 npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
 ```
 
-### Step 2: Authenticate with GitHub
+#### Step 3: Authenticate with GitHub
 
 ```bash
-# Login using GitHub Personal Access Token
+# Login using GitHub credentials
+# Username: your GitHub username
+# Password: the Personal Access Token from Step 1
 npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
 ```
 
-**Creating a Personal Access Token:**
-1. Go to: https://github.com/settings/tokens
-2. Click "Generate new token (classic)"
-3. Select scopes: `read:packages` (for installing), `write:packages` (for publishing)
-4. Copy the token and use it as password during `npm login`
-
-### Step 3: Install Packages Globally
+#### Step 4: Install Packages Globally
 
 ```bash
 # Install Serper CLI globally
@@ -44,6 +63,26 @@ npm install -g @tan-yong-sheng/serper
 npm install -g @tan-yong-sheng/ntfy
 
 # Verify installation
+serper --help
+ntfy --help
+```
+
+## 🔨 Alternative: Build from Source (No Authentication)
+
+For personal setup without GitHub authentication:
+
+```bash
+# Clone and build
+git clone https://github.com/tan-yong-sheng/cc-devkits.git
+cd cc-devkits
+npm install
+npm run build:all
+
+# Link packages globally
+cd packages/serper && npm link && cd ../..
+cd packages/ntfy && npm link && cd ../..
+
+# Verify
 serper --help
 ntfy --help
 ```

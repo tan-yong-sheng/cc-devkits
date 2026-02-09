@@ -14,36 +14,49 @@ All packages are available on **GitHub Packages**. Install globally for CLI usag
 
 ## 🚀 Quick Start
 
-### Option 1: Install from GitHub Packages (Recommended)
+### Install from GitHub Packages
+
+**⚠️ Note:** GitHub Packages requires authentication even for public packages. This is a one-time setup.
 
 ```bash
-# Configure npm for GitHub Packages
+# 1. Configure npm for @tan-yong-sheng scope
 npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
 
-# Login with GitHub Personal Access Token (needs read:packages scope)
+# 2. Login with GitHub credentials
+#    Username: your GitHub username
+#    Password: Personal Access Token with 'read:packages' scope
+#    Create token at: https://github.com/settings/tokens/new
 npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
 
-# Install globally
+# 3. Install globally
 npm install -g @tan-yong-sheng/serper
 npm install -g @tan-yong-sheng/ntfy
 
-# Verify installation
+# 4. Verify installation
 serper --help
 ntfy --help
 ```
 
-**Get Personal Access Token:**
-1. Go to https://github.com/settings/tokens
-2. Generate new token with `read:packages` scope
-3. Use it when prompted for password during `npm login`
+**First time?** Get your Personal Access Token:
+1. Visit: https://github.com/settings/tokens/new
+2. Name it: `npm-packages`
+3. Select: ☑️ `read:packages`
+4. Click "Generate token" and copy it
+5. Use as password when running `npm login`
 
-### Option 2: Build from Source
+### Build from Source (No Authentication Required)
+
+For personal setup without GitHub authentication:
 
 ```bash
 git clone https://github.com/tan-yong-sheng/cc-devkits.git
 cd cc-devkits
 npm install
 npm run build:all
+
+# Link packages globally
+cd packages/serper && npm link && cd ../..
+cd packages/ntfy && npm link && cd ../..
 ```
 
 ## Features
