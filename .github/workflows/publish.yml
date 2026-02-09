@@ -11,33 +11,7 @@ permissions:
   packages: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@tan-yong-sheng'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build all packages
-        run: npm run build:all
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: |
-            packages/*/dist/
-            packages/*/package.json
-
-  test:
-    needs: build
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,14 +46,8 @@ jobs:
           node -e "import('@tan-yong-sheng/ntfy').then(m => console.log('✓ ntfy:', Object.keys(m)))"
 
   publish:
-    needs: test
+    needs: build-and-test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package:
-          - core
-          - serper
-          - ntfy
     steps:
       - uses: actions/checkout@v4
 
@@ -89,34 +57,45 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@tan-yong-sheng'
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-
       - name: Install dependencies
         run: npm install
 
-      - name: Build ${{ matrix.package }}
-        run: npm run build:${{ matrix.package }}
+      - name: Build all packages
+        run: npm run build:all
 
-      - name: Configure package for GitHub Packages
-        working-directory: packages/${{ matrix.package }}
+      - name: Configure packages for GitHub Packages
         run: |
-          # Update package.json to point to GitHub registry
-          node -e "
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.publishConfig = { registry: 'https://npm.pkg.github.com' };
-          pkg.repository = {
-            type: 'git',
-            url: 'git+https://github.com/${{ github.repository }}.git'
-          };
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          "
+          # Update each package.json with publishConfig
+          for pkg in core serper ntfy; do
+            cd packages/$pkg
+            node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
+            pkg.repository = {
+              type: 'git',
+              url: 'git+https://github.com/${{ github.repository }}.git',
+              directory: 'packages/$pkg'
+            };
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+            "
+            cd ../..
+          done
 
-      - name: Publish ${{ matrix.package }}
-        working-directory: packages/${{ matrix.package }}
+      - name: Publish @tan-yong-sheng/core
+        working-directory: packages/core
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish @tan-yong-sheng/serper
+        working-directory: packages/serper
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish @tan-yong-sheng/ntfy
+        working-directory: packages/ntfy
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
