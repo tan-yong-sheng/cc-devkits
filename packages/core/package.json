@@ -1,0 +1,53 @@
+{
+  "name": "@cc-devkits/core",
+  "version": "1.0.0",
+  "description": "Core utilities for cc-devkits - HTTP, retry, CLI parsing, and more",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http.js",
+      "require": "./dist/http.js",
+      "types": "./dist/http.d.ts"
+    },
+    "./retry": {
+      "import": "./dist/retry.js",
+      "require": "./dist/retry.js",
+      "types": "./dist/retry.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli.js",
+      "require": "./dist/cli.js",
+      "types": "./dist/cli.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "echo \"Tests not implemented yet\""
+  },
+  "keywords": [
+    "claude-code",
+    "cc-devkits",
+    "utilities",
+    "http",
+    "retry",
+    "cli"
+  ],
+  "author": "tan-yong-sheng",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tan-yong-sheng/cc-devkits",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

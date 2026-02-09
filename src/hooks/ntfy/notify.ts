@@ -36,7 +36,7 @@ interface ClaudeContext {
 }
 
 // Configuration from environment
-const NTFY_URL = process.env.NTFY_BASE_URL || process.env.NTFY_URL || 'https://ntfy.tanyongsheng.site';
+const NTFY_URL = process.env.NTFY_BASE_URL || process.env.NTFY_URL || 'https://ntfy.sh';
 const NTFY_TOPIC = process.env.NTFY_TOPIC || 'openclaw';
 const NTFY_TOKEN = process.env.NTFY_API_KEY || process.env.NTFY_TOKEN || '';
 const COOLDOWN_SECONDS = 12;

@@ -1,0 +1,43 @@
+{
+  "name": "@cc-devkits/serper",
+  "version": "1.0.0",
+  "description": "Serper API wrapper for Google Search and web scraping",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "serper": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "echo \"Tests not implemented yet\""
+  },
+  "keywords": [
+    "claude-code",
+    "cc-devkits",
+    "serper",
+    "google-search",
+    "web-scraping"
+  ],
+  "author": "tan-yong-sheng",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tan-yong-sheng/cc-devkits",
+    "directory": "packages/serper"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@cc-devkits/core": "^1.0.0"
+  }
+}

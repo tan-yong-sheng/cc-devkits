@@ -1,0 +1,122 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@cc-devkits'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build all packages
+        run: npm run build:all
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            packages/*/dist/
+            packages/*/package.json
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build all packages
+        run: npm run build:all
+
+      - name: Test CLI help
+        run: |
+          echo "Testing Serper CLI..."
+          node packages/serper/dist/cli.js --help
+
+          echo "Testing ntfy CLI..."
+          node packages/ntfy/dist/cli.js --help
+
+      - name: Verify package imports
+        run: |
+          echo "Verifying @cc-devkits/core..."
+          node -e "import('@cc-devkits/core').then(m => console.log('✓ core:', Object.keys(m)))"
+
+          echo "Verifying @cc-devkits/serper..."
+          node -e "import('@cc-devkits/serper').then(m => console.log('✓ serper:', Object.keys(m)))"
+
+          echo "Verifying @cc-devkits/ntfy..."
+          node -e "import('@cc-devkits/ntfy').then(m => console.log('✓ ntfy:', Object.keys(m)))"
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - core
+          - serper
+          - ntfy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@cc-devkits'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build ${{ matrix.package }}
+        run: npm run build:${{ matrix.package }}
+
+      - name: Configure package for GitHub Packages
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          # Update package.json to point to GitHub registry
+          node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.publishConfig = { registry: 'https://npm.pkg.github.com' };
+          pkg.repository = {
+            type: 'git',
+            url: 'git+https://github.com/${{ github.repository }}.git'
+          };
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+
+      - name: Publish ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

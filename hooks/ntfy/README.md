@@ -135,12 +135,12 @@ The script uses these environment variables:
 
 ```bash
 # Primary (recommended)
-NTFY_BASE_URL="https://ntfy.tanyongsheng.site"
+NTFY_BASE_URL="https://ntfy.sh"
 NTFY_TOPIC="openclaw"
 NTFY_API_KEY="<NTFY_API_KEY>"
 
 # Fallback (alternative names)
-NTFY_URL="https://ntfy.tanyongsheng.site"  # Falls back to NTFY_BASE_URL
+NTFY_URL="https://ntfy.sh"  # Falls back to NTFY_BASE_URL
 NTFY_TOKEN="..."                            # Falls back to NTFY_API_KEY
 ```
 
@@ -341,7 +341,7 @@ echo $NTFY_API_KEY
 curl -H "Authorization: Bearer $NTFY_API_KEY" \
   -H "Title: Test" \
   -d "Test message" \
-  https://ntfy.tanyongsheng.site/openclaw
+  https://ntfy.sh/openclaw
 ```
 
 ---

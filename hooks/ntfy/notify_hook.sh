@@ -25,7 +25,7 @@
 set -e
 
 # Configuration from environment
-NTFY_URL="${NTFY_BASE_URL:-${NTFY_URL:-https://ntfy.tanyongsheng.site}}"
+NTFY_URL="${NTFY_BASE_URL:-${NTFY_URL:-https://ntfy.sh}}"
 NTFY_TOPIC="${NTFY_TOPIC:-openclaw}"
 NTFY_TOKEN="${NTFY_API_KEY:-${NTFY_TOKEN:-}}"
 

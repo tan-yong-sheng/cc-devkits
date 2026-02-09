@@ -39,7 +39,7 @@ Create a `.env` file or set environment variables:
 
 ```bash
 # ntfy Configuration
-export NTFY_BASE_URL="https://ntfy.tanyongsheng.site"
+export NTFY_BASE_URL="https://ntfy.sh"
 export NTFY_TOPIC="openclaw"
 export NTFY_API_KEY="your-ntfy-api-key"
 

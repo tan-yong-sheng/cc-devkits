@@ -5,7 +5,7 @@ echo "🧪 Testing Claude Code ntfy Hooks (Bash version)"
 echo ""
 
 # Set environment (use existing ntfy config)
-export NTFY_BASE_URL="${NTFY_BASE_URL:-https://ntfy.tanyongsheng.site}"
+export NTFY_BASE_URL="${NTFY_BASE_URL:-https://ntfy.sh}"
 export NTFY_TOPIC="${NTFY_TOPIC:-openclaw}"
 
 HOOK_SCRIPT="$HOME/.claude/hooks/notify-bash/notify_hook.sh"
