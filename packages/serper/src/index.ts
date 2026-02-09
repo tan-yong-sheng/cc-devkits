@@ -39,6 +39,7 @@ async function serperRequest(
       'X-API-KEY': apiKey,
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify(data),
     verbose,
   };
 
