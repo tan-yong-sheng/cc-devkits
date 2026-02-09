@@ -2,7 +2,7 @@
  * @cc-devkits/serper - Serper API wrapper for Google Search and web scraping
  */
 
-import { makeRequest, retry, anonymizeKey } from '@tan-yong-sheng/core';
+import { makeRequest, retry, anonymizeKey, rotateKeys } from '@tan-yong-sheng/core';
 import type { RequestOptions } from '@tan-yong-sheng/core';
 import type {
   SearchOptions,
@@ -17,10 +17,18 @@ const SERPER_API_BASE = 'https://google.serper.dev';
 const SCRAPE_API_BASE = 'https://scrape.serper.dev';
 
 function getApiKey(providedKey?: string): string {
-  const apiKey = providedKey || process.env.SERPER_API_KEY || '';
+  // 1. Priority: Provided key
+  if (providedKey) return providedKey;
+
+  // 2. Next: Rotated keys from SERPER_API_KEYS
+  const rotatedKey = rotateKeys('SERPER_API_KEYS', 'serper');
+  if (rotatedKey) return rotatedKey;
+
+  // 3. Fallback: Single SERPER_API_KEY
+  const apiKey = process.env.SERPER_API_KEY || '';
   if (!apiKey) {
     throw new Error(
-      'SERPER_API_KEY environment variable is required. Get a free API key at: https://serper.dev'
+      'SERPER_API_KEY or SERPER_API_KEYS environment variable is required. Get a free API key at: https://serper.dev'
     );
   }
   return apiKey;

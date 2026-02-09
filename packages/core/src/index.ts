@@ -22,5 +22,8 @@ export { anonymizeKey, redactApiKey } from './anonymize';
 // Deduplication
 export { checkDedupe, createDedupeChecker } from './deduplicate';
 
+// Key rotation
+export { rotateKeys } from './rotate';
+
 // Common types
 export * from './types';
