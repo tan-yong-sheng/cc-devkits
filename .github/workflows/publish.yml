@@ -57,45 +57,65 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@tan-yong-sheng'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm install
 
-      - name: Build all packages
+      - name: Build all packages (ensures dependencies are available)
         run: npm run build:all
 
-      - name: Configure packages for GitHub Packages
-        run: |
-          # Update each package.json with publishConfig
-          for pkg in core serper ntfy; do
-            cd packages/$pkg
-            node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
-            pkg.repository = {
-              type: 'git',
-              url: 'git+https://github.com/${{ github.repository }}.git',
-              directory: 'packages/$pkg'
-            };
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-            "
-            cd ../..
-          done
-
-      - name: Publish @tan-yong-sheng/core
+      # Publish core first (no dependencies)
+      - name: Configure and publish @tan-yong-sheng/core
         working-directory: packages/core
-        run: npm publish
+        run: |
+          node -e "
+          const fs = require('fs');
+          const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkgJson.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
+          pkgJson.repository = {
+            type: 'git',
+            url: 'git+https://github.com/${{ github.repository }}.git',
+            directory: 'packages/core'
+          };
+          fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
+          "
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish @tan-yong-sheng/serper
+      # Publish serper (depends on core)
+      - name: Configure and publish @tan-yong-sheng/serper
         working-directory: packages/serper
-        run: npm publish
+        run: |
+          node -e "
+          const fs = require('fs');
+          const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkgJson.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
+          pkgJson.repository = {
+            type: 'git',
+            url: 'git+https://github.com/${{ github.repository }}.git',
+            directory: 'packages/serper'
+          };
+          fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
+          "
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish @tan-yong-sheng/ntfy
+      # Publish ntfy (depends on core)
+      - name: Configure and publish @tan-yong-sheng/ntfy
         working-directory: packages/ntfy
-        run: npm publish
+        run: |
+          node -e "
+          const fs = require('fs');
+          const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkgJson.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
+          pkgJson.repository = {
+            type: 'git',
+            url: 'git+https://github.com/${{ github.repository }}.git',
+            directory: 'packages/ntfy'
+          };
+          fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
+          "
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
