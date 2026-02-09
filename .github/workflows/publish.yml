@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 20
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@cc-devkits'
+          scope: '@tan-yong-sheng'
 
       - name: Install dependencies
         run: npm install
@@ -62,14 +62,14 @@ jobs:
 
       - name: Verify package imports
         run: |
-          echo "Verifying @cc-devkits/core..."
-          node -e "import('@cc-devkits/core').then(m => console.log('✓ core:', Object.keys(m)))"
+          echo "Verifying @tan-yong-sheng/core..."
+          node -e "import('@tan-yong-sheng/core').then(m => console.log('✓ core:', Object.keys(m)))"
 
-          echo "Verifying @cc-devkits/serper..."
-          node -e "import('@cc-devkits/serper').then(m => console.log('✓ serper:', Object.keys(m)))"
+          echo "Verifying @tan-yong-sheng/serper..."
+          node -e "import('@tan-yong-sheng/serper').then(m => console.log('✓ serper:', Object.keys(m)))"
 
-          echo "Verifying @cc-devkits/ntfy..."
-          node -e "import('@cc-devkits/ntfy').then(m => console.log('✓ ntfy:', Object.keys(m)))"
+          echo "Verifying @tan-yong-sheng/ntfy..."
+          node -e "import('@tan-yong-sheng/ntfy').then(m => console.log('✓ ntfy:', Object.keys(m)))"
 
   publish:
     needs: test
@@ -87,7 +87,7 @@ jobs:
         with:
           node-version: 20
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@cc-devkits'
+          scope: '@tan-yong-sheng'
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
