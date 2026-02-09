@@ -41,8 +41,8 @@ Detailed documentation has been moved to the `docs/` directory:
 
 ### Serper CLI
 ```bash
-serper search "TypeScript best practices" --gl us --hl en --num 10
-serper scrape "https://example.com" --markdown
+serper search --query "TypeScript best practices" --gl us --hl en --num 10
+serper scrape --url "https://example.com" --markdown
 ```
 
 ### ntfy CLI
