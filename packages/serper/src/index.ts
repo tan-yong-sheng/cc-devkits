@@ -2,8 +2,8 @@
  * @cc-devkits/serper - Serper API wrapper for Google Search and web scraping
  */
 
-import { makeRequest, retry, anonymizeKey } from '@cc-devkits/core';
-import type { RequestOptions } from '@cc-devkits/core';
+import { makeRequest, retry, anonymizeKey } from '@tan-yong-sheng/core';
+import type { RequestOptions } from '@tan-yong-sheng/core';
 import type {
   SearchOptions,
   ScrapeOptions,

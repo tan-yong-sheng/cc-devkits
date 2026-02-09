@@ -1,5 +1,5 @@
 {
-  "name": "@cc-devkits/core",
+  "name": "@tan-yong-sheng/core",
   "version": "1.0.0",
   "description": "Core utilities for cc-devkits - HTTP, retry, CLI parsing, and more",
   "main": "dist/index.js",

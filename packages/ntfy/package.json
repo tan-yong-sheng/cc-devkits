@@ -1,5 +1,5 @@
 {
-  "name": "@cc-devkits/ntfy",
+  "name": "@tan-yong-sheng/ntfy",
   "version": "1.0.0",
   "description": "ntfy notification client for push notifications",
   "main": "dist/index.js",
@@ -38,6 +38,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@cc-devkits/core": "^1.0.0"
+    "@tan-yong-sheng/core": "^1.0.0"
   }
 }

@@ -2,7 +2,7 @@
  * @cc-devkits/ntfy - ntfy notification client
  */
 
-import { makeRequest, checkDedupe } from '@cc-devkits/core';
+import { makeRequest, checkDedupe } from '@tan-yong-sheng/core';
 import type { NtfyOptions, NtfyConfig, NtfyResponse, NtfyPriority } from './types';
 
 export * from './types';

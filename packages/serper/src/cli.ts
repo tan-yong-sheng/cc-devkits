@@ -4,8 +4,8 @@
  */
 
 import { search, scrape } from './index.js';
-import { parseArgs } from '@cc-devkits/core';
-import type { ArgOption } from '@cc-devkits/core';
+import { parseArgs } from '@tan-yong-sheng/core';
+import type { ArgOption } from '@tan-yong-sheng/core';
 
 const VERSION = '1.0.0';
 
