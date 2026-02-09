@@ -1,0 +1,24 @@
+{
+  "name": "cc-devkits",
+  "version": "1.1.0",
+  "description": "Claude Code plugin with ntfy hooks, serper web search/skills, and ai-vision-mcp integration",
+  "author": {
+    "name": "tan-yong-sheng",
+    "email": ""
+  },
+  "homepage": "https://github.com/tan-yong-sheng/cc-devkits",
+  "repository": "https://github.com/tan-yong-sheng/cc-devkits",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "ntfy",
+    "notifications",
+    "serper",
+    "search",
+    "web-scraping",
+    "mcp",
+    "vision"
+  ],
+  "skills": ["./skills/"]
+}

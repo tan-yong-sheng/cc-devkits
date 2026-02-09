@@ -9,10 +9,10 @@ Get up and running in under 2 minutes:
 ### Step 1: Install the Plugin
 ```bash
 # Add marketplace
-/plugin marketplace add affaan-m/everything-claude-code
+/plugin marketplace add tan-yong-sheng/cc-devkits
 
 # Install plugin
-/plugin install everything-claude-code@everything-claude-code
+/plugin install cc-devkits@tan-yong-sheng
 ```
 
 ### Step 2: Install Dependencies
