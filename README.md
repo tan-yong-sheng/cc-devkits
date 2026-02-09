@@ -4,23 +4,22 @@ A Claude Code plugin providing ntfy notifications, Serper web search/scraping sk
 
 ## 🚀 Quick Start
 
-### Step 1: Install Plugin (Required)
+Get up and running in under 2 minutes:
 
-Install `cc-devkits` as a Claude Code plugin to enable all features:
-
+### Step 1: Install the Plugin
 ```bash
-# 1. Clone the repository
-git clone https://github.com/tan-yong-sheng/cc-devkits.git
-cd cc-devkits
+# Add marketplace
+/plugin marketplace add affaan-m/everything-claude-code
 
-# 2. Install dependencies and build
-npm install
-npm run build:all
-
-# 3. Add to Claude Code
-# Replace [absolute-path] with the full path to this directory
-claude mcp add cc-devkits -- [absolute-path]/packages/serper/bin/serper
+# Install plugin
+/plugin install everything-claude-code@everything-claude-code
 ```
+
+### Step 2: Install Dependencies
+The Serper skill requires the `@tan-yong-sheng/serper` CLI tool for web search and scraping. Follow the instructions in **[skills/serper/SKILL.md](./skills/serper/SKILL.md)** to:
+- Configure GitHub Packages authentication
+- Install the CLI globally: `npm install -g @tan-yong-sheng/serper`
+- Set up your `SERPER_API_KEY`
 
 ## Features
 
