@@ -2,7 +2,6 @@
  * Retry utilities - Exponential backoff with jitter
  */
 
-import { randomJitter } from './user-agent.js';
 
 export interface RetryOptions<T> {
   fn: () => Promise<T>;

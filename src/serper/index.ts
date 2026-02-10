@@ -1,17 +1,17 @@
 /**
- * @cc-devkits/serper - Serper API wrapper for Google Search and web scraping
+ * @tan-yong-sheng/cc-devkits/serper - Serper API wrapper for Google Search and web scraping
  */
 
-import { makeRequest, retry, anonymizeKey, rotateKeys } from '@tan-yong-sheng/core';
-import type { RequestOptions } from '@tan-yong-sheng/core';
+import { makeRequest, retry, anonymizeKey, rotateKeys } from '../lib/index.js';
+import type { RequestOptions } from '../lib/index.js';
 import type {
   SearchOptions,
   ScrapeOptions,
   SearchResponse,
   ScrapeResponse,
-} from './types';
+} from './types.js';
 
-export * from './types';
+export * from './types.js';
 
 const SERPER_API_BASE = 'https://google.serper.dev';
 const SCRAPE_API_BASE = 'https://scrape.serper.dev';

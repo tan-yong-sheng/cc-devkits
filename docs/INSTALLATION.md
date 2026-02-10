@@ -1,58 +1,72 @@
 # Installation Guide
 
-This document covers how to install and set up `cc-devkits` packages.
+This document covers how to install and set up `cc-devkits`.
 
-## 📦 Published Packages
+## 📦 Published Package
 
-All packages are available on **GitHub Packages**. Install globally for CLI usage:
+A single unified package is available on **npmjs.com**:
 
 | Package | Description | Version |
 |---------|-------------|---------|
-| [@tan-yong-sheng/core](https://github.com/tan-yong-sheng?tab=packages&repo_name=cc-devkits) | Core utilities (HTTP, retry, CLI parsing) | 1.0.0 |
-| [@tan-yong-sheng/serper](https://github.com/tan-yong-sheng?tab=packages&repo_name=cc-devkits) | Google Search & web scraping | 1.0.0 |
-| [@tan-yong-sheng/ntfy](https://github.com/tan-yong-sheng?tab=packages&repo_name=cc-devkits) | Push notifications via ntfy | 1.0.0 |
+| [@tan-yong-sheng/cc-devkits](https://www.npmjs.com/package/@tan-yong-sheng/cc-devkits) | Google Search, web scraping, and push notifications | 2.0.0 |
 
-## 🚀 Install from GitHub Packages
+## 🚀 Install from npm
 
-**⚠️ Note:** GitHub Packages requires authentication even for public packages. This is a one-time setup.
+No authentication required for public packages on npmjs.com:
 
 ```bash
-# 1. Configure npm for @tan-yong-sheng scope
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
+# Install globally
+npm install -g @tan-yong-sheng/cc-devkits
 
-# 2. Login with GitHub credentials
-#    Username: your GitHub username
-#    Password: Personal Access Token with 'read:packages' scope
-#    Create token at: https://github.com/settings/tokens/new
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-
-# 3. Install globally
-npm install -g @tan-yong-sheng/serper
-npm install -g @tan-yong-sheng/ntfy
-
-# 4. Verify installation
-serper --help
-ntfy --help
+# Verify installation
+cc-serper --help
+cc-ntfy --help
 ```
 
-**First time?** Get your Personal Access Token:
-1. Visit: https://github.com/settings/tokens/new
-2. Name it: `npm-packages`
-3. Select: ☑️ `read:packages`
-4. Click "Generate token" and copy it
-5. Use as password when running `npm login`
+This provides two CLI commands:
+- `cc-serper` - Google Search and web scraping
+- `cc-ntfy` - Push notifications via ntfy
 
-## 🛠️ Build from Source (No Authentication Required)
+## 📚 Library Usage
 
-For personal setup without GitHub authentication:
+Install as a dependency in your project:
+
+```bash
+npm install @tan-yong-sheng/cc-devkits
+```
+
+Import specific modules:
+
+```typescript
+// Core utilities
+import { retry, randomUserAgent } from '@tan-yong-sheng/cc-devkits';
+
+// Serper (Google Search & scraping)
+import { search, scrape } from '@tan-yong-sheng/cc-devkits/serper';
+
+// ntfy (push notifications)
+import { send, sendWithDedupe } from '@tan-yong-sheng/cc-devkits/ntfy';
+```
+
+## 🛠️ Build from Source
+
+For development or contributing:
 
 ```bash
 git clone https://github.com/tan-yong-sheng/cc-devkits.git
 cd cc-devkits
 npm install
-npm run build:all
+npm run build
 
-# Link packages globally
-cd packages/serper && npm link && cd ../..
-cd packages/ntfy && npm link && cd ../..
+# Link for global CLI usage
+npm link
+
+# Test
+cc-serper --help
+cc-ntfy --help
 ```
+
+## 🔧 Next Steps
+
+- **[Environment Variables](./ENVIRONMENT.md)** - Configure API keys
+- **[Development Guide](./DEVELOPMENT.md)** - Contributing guidelines

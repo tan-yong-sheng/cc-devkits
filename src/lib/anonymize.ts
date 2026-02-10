@@ -17,8 +17,6 @@ export function anonymizeKey(key: string, visibleChars = 3): string {
  */
 export function redactApiKey(key: string, replacement = '***'): string {
   // Replace the key with asterisks
-  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(escapedKey, 'g');
   return replacement.repeat(key.length);
 }
 

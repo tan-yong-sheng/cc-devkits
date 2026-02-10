@@ -1,28 +1,15 @@
 #!/usr/bin/env node
 /**
- * ntfy CLI - Send push notifications via ntfy
+ * cc-ntfy CLI - Send push notifications via ntfy
  */
 
-import { send, sendWithDedupe } from './index.js';
-import { parseArgs } from '@tan-yong-sheng/core';
-import type { ArgOption } from '@tan-yong-sheng/core';
-import type { NtfyPriority } from './types';
+import { send, sendWithDedupe } from '../ntfy/index.js';
+import { parseArgs } from '../lib/index.js';
+import type { ArgOption } from '../lib/index.js';
+import type { NtfyPriority } from '../ntfy/types.js';
 
 const VERSION = '1.0.0';
 
-interface NtfyCliArgs {
-  title: string;
-  message: string;
-  priority?: NtfyPriority;
-  tags?: string;
-  click?: string;
-  attach?: string;
-  timeout?: number;
-  topic?: string;
-  baseUrl?: string;
-  apiKey?: string;
-  dedupe?: boolean;
-}
 
 const argOptions: Record<string, ArgOption> = {
   title: { long: 'title', type: 'string', required: true },
@@ -39,8 +26,8 @@ const argOptions: Record<string, ArgOption> = {
 };
 
 function showHelp(): void {
-  console.log('ntfy CLI - Send push notifications');
-  console.log('Usage: ntfy [options]');
+  console.log('cc-ntfy CLI - Send push notifications');
+  console.log('Usage: cc-ntfy [options]');
   console.log('');
   console.log('Required Options:');
   console.log('  --title <title>        Notification title');
@@ -65,8 +52,8 @@ function showHelp(): void {
   console.log('  NTFY_API_KEY           API key for authentication');
   console.log('');
   console.log('Examples:');
-  console.log('  ntfy --title "Hello" --message "World"');
-  console.log('  ntfy --title "Alert" --message "High CPU" --priority high --tags warning');
+  console.log('  cc-ntfy --title "Hello" --message "World"');
+  console.log('  cc-ntfy --title "Alert" --message "High CPU" --priority high --tags warning');
 }
 
 async function main(): Promise<void> {
@@ -78,7 +65,7 @@ async function main(): Promise<void> {
   }
 
   if (args.includes('-v') || args.includes('--version')) {
-    console.log(`ntfy version ${VERSION}`);
+    console.log(`cc-ntfy version ${VERSION}`);
     process.exit(0);
   }
 

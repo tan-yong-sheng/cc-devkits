@@ -1,11 +1,11 @@
 /**
- * @cc-devkits/ntfy - ntfy notification client
+ * @tan-yong-sheng/cc-devkits/ntfy - ntfy notification client
  */
 
-import { makeRequest, checkDedupe } from '@tan-yong-sheng/core';
-import type { NtfyOptions, NtfyConfig, NtfyResponse, NtfyPriority } from './types';
+import { makeRequest, checkDedupe } from '../lib/index.js';
+import type { NtfyOptions, NtfyConfig, NtfyResponse, NtfyPriority } from './types.js';
 
-export * from './types';
+export * from './types.js';
 
 const DEFAULT_TIMEOUT = 10;
 const COOLDOWN_SECONDS = 12;

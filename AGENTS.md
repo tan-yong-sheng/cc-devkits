@@ -1,109 +1,145 @@
-# cc-devkits Core Library Architecture
+# cc-devkits Package Architecture
 
-This document describes the library architecture for wrapping shared utilities into a publishable npm library.
+This document describes the unified package architecture for cc-devkits.
 
 ## Overview
 
-cc-devkits uses a **monorepo architecture** with a core library containing shared utilities that all skills depend on. This allows:
-- DRY (Don't Repeat Yourself) principle
-- Centralized updates to shared logic
-- Easy addition of new skills with common dependencies
-- Global installation via npm for command-line usage
+cc-devkits is now a **single unified npm package** (`@tan-yong-sheng/cc-devkits`) that provides:
+- Google Search and web scraping via Serper API
+- Push notifications via ntfy
+- Claude Code hooks for notifications
 
 ## Package Registry
 
-All packages are published to **GitHub Packages** under the `@tan-yong-sheng` scope:
-
-- `@tan-yong-sheng/core` - Core shared utilities
-- `@tan-yong-sheng/serper` - Serper API wrapper (Google Search & web scraping)
-- `@tan-yong-sheng/ntfy` - ntfy notification client
-
-### Important: GitHub Packages Authentication
-
-**⚠️ GitHub Packages requires authentication even for public packages.** This is a GitHub limitation, not a repository setting.
-
-Users must authenticate once with a Personal Access Token that has `read:packages` scope.
-
-### Installing from GitHub Packages
+Published to **npmjs.com** (public registry):
 
 ```bash
-# One-time setup
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
-
-# Authenticate (use Personal Access Token as password)
-# Get token: https://github.com/settings/tokens/new (select 'read:packages')
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-
-# Install packages globally for CLI usage
-npm install -g @tan-yong-sheng/serper
-npm install -g @tan-yong-sheng/ntfy
-
-# Or install locally in a project
-npm install @tan-yong-sheng/core @tan-yong-sheng/serper @tan-yong-sheng/ntfy
+npm install -g @tan-yong-sheng/cc-devkits
 ```
 
-### Alternative: Build from Source
-
-For personal setup without authentication, users can build from source:
-
-```bash
-git clone https://github.com/tan-yong-sheng/cc-devkits.git
-cd cc-devkits
-npm install
-npm run build:all
-
-# Link for global CLI usage
-cd packages/serper && npm link
-cd ../ntfy && npm link
-```
+This provides two CLI commands:
+- `cc-serper` - Google Search and web scraping
+- `cc-ntfy` - Push notifications
 
 ## Directory Structure
 
 ```
 cc-devkits/
-├── packages/                          # Monorepo for libraries
-│   ├── core/                          # Core shared utilities
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   ├── src/
-│   │   │   ├── index.ts               # Main exports
-│   │   │   ├── http.ts                # HTTP request utilities
-│   │   │   ├── retry.ts               # Retry with exponential backoff
-│   │   │   ├── user-agent.ts          # User agent rotation
-│   │   │   ├── cli.ts                 # CLI argument parsing
-│   │   │   ├── anonymize.ts           # API key redaction
-│   │   │   ├── deduplicate.ts         # Deduplication logic
-│   │   │   └── types.ts               # Shared TypeScript types
-│   │   └── dist/                      # Compiled output
+├── src/
+│   ├── lib/                    # Core utilities (internal)
+│   │   ├── index.ts            # Main exports
+│   │   ├── http.ts             # HTTP request utilities
+│   │   ├── retry.ts            # Retry with exponential backoff
+│   │   ├── cli.ts              # CLI argument parsing
+│   │   ├── user-agent.ts       # User agent rotation
+│   │   ├── anonymize.ts        # API key redaction
+│   │   ├── deduplicate.ts      # Deduplication logic
+│   │   ├── rotate.ts           # API key rotation
+│   │   └── types.ts            # Shared TypeScript types
 │   │
-│   ├── serper/                        # Serper API wrapper
-│   │   ├── package.json               # Depends on: @tan-yong-sheng/core
-│   │   ├── src/
-│   │   │   ├── index.ts               # Exports search(), scrape()
-│   │   │   ├── cli.ts                 # CLI entry point
-│   │   │   └── types.ts               # Serper-specific types
-│   │   └── dist/
+│   ├── serper/                 # Serper library
+│   │   ├── index.ts            # search(), scrape() functions
+│   │   └── types.ts            # Serper types
 │   │
-│   └── ntfy/                         # ntfy notification client
-│       ├── package.json               # Depends on: @tan-yong-sheng/core
-│       ├── src/
-│       │   ├── index.ts               # Exports send()
-│       │   ├── cli.ts                 # CLI entry point
-│       │   └── types.ts               # ntfy-specific types
-│       └── dist/
+│   ├── ntfy/                   # ntfy library
+│   │   ├── index.ts            # send(), sendWithDedupe() functions
+│   │   └── types.ts            # ntfy types
+│   │
+│   ├── cli/
+│   │   ├── serper.ts           # cc-serper CLI entry point
+│   │   └── ntfy.ts             # cc-ntfy CLI entry point
+│   │
+│   ├── hooks/
+│   │   └── ntfy/
+│   │       └── notify.ts       # Claude Code hook script
+│   │
+│   └── skills/
+│       └── serper/
+│           └── scripts/
+│               └── serper.ts   # Legacy skill script
 │
-├── skills/                            # Claude Code skills
-│   └── serper/                       # Serper skill (uses packages/serper)
+├── hooks/
+│   └── hooks.json              # Claude Code hook configuration
 │
-├── hooks/                            # Claude Code hooks
-│   └── ntfy/                        # ntfy hooks (uses packages/ntfy)
+├── skills/
+│   └── serper/
+│       └── SKILL.md            # Skill documentation
 │
-└── package.json                      # Main plugin package
+├── dist/                       # Compiled output
+│   ├── lib/                    # Core utilities
+│   ├── serper/                 # Serper library
+│   ├── ntfy/                   # ntfy library
+│   ├── cli/                    # CLI binaries
+│   └── hooks/                  # Hook scripts
+│
+├── package.json                # Single package config
+├── tsconfig.json               # TypeScript config
+└── README.md                   # Documentation
 ```
 
-## Core Library Exports (`@tan-yong-sheng/core`)
+## Package Exports
 
-The core library provides reusable utilities for all skills. When building new skills that require CLI execution, you **must** build and publish them as npm packages to enable global installation.
+The package uses conditional exports:
+
+```json
+{
+  "exports": {
+    ".": {
+      "import": "./dist/lib/index.js",
+      "types": "./dist/lib/index.d.ts"
+    },
+    "./serper": {
+      "import": "./dist/serper/index.js",
+      "types": "./dist/serper/index.d.ts"
+    },
+    "./ntfy": {
+      "import": "./dist/ntfy/index.js",
+      "types": "./dist/ntfy/index.d.ts"
+    }
+  }
+}
+```
+
+## CLI Binaries
+
+```json
+{
+  "bin": {
+    "cc-serper": "dist/cli/serper.js",
+    "cc-ntfy": "dist/cli/ntfy.js"
+  }
+}
+```
+
+## Usage Examples
+
+### CLI Commands
+
+```bash
+# Search Google
+cc-serper search "AI news" --gl us --hl en --num 10
+
+# Scrape webpage
+cc-serper scrape "https://example.com" --markdown
+
+# Send notification
+cc-ntfy --title "Done" --message "Task complete" --priority high
+```
+
+### Library Imports
+
+```typescript
+// Import core utilities
+import { retry, randomUserAgent } from '@tan-yong-sheng/cc-devkits';
+
+// Import Serper
+import { search, scrape } from '@tan-yong-sheng/cc-devkits/serper';
+
+// Import ntfy
+import { send, sendWithDedupe } from '@tan-yong-sheng/cc-devkits/ntfy';
+```
+
+## Core Library (`src/lib/`)
 
 ### HTTP Utilities
 
@@ -115,36 +151,28 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   body?: string;
   timeout?: number;
-  verbose?: boolean;
+  apiKey?: string;
+  apiKeyHeader?: string;
 }
 
 export function makeRequest(options: RequestOptions): Promise<string>;
+export function rawRequest(options: RequestOptions): Promise<HttpResult>;
 ```
 
 ### Retry Logic
 
 ```typescript
 // retry.ts
-export interface RetryOptions {
+export interface RetryOptions<T> {
   fn: () => Promise<T>;
   maxAttempts?: number;
   initialDelay?: number;
   maxDelay?: number;
   jitter?: number;
-  onRetry?: (error: Error, attempt: number) => void;
+  onRetry?: (error: Error, attempt: number, delay: number) => void;
 }
 
-export async function retry<T>(options: RetryOptions): Promise<T>;
-```
-
-### User Agent Rotation
-
-```typescript
-// user-agent.ts
-export const USER_AGENTS: readonly string[];
-
-export function randomUserAgent(): string;
-export function rotateUserAgent(): string;
+export async function retry<T>(options: RetryOptions<T>): Promise<T>;
 ```
 
 ### CLI Utilities
@@ -152,11 +180,12 @@ export function rotateUserAgent(): string;
 ```typescript
 // cli.ts
 export interface ArgOption {
-  short?: string;
-  long: string;
   type: 'string' | 'number' | 'boolean';
+  short?: string;
+  long?: string;
   required?: boolean;
   description?: string;
+  default?: string | number | boolean;
 }
 
 export function parseArgs<T>(
@@ -165,325 +194,139 @@ export function parseArgs<T>(
 ): T;
 ```
 
+### User Agent Rotation
+
+```typescript
+// user-agent.ts
+export const USER_AGENTS: readonly string[];
+export function randomUserAgent(): string;
+export function rotateUserAgent(): string;
+```
+
 ### API Key Anonymization
 
 ```typescript
 // anonymize.ts
 export function anonymizeKey(key: string, visibleChars?: number): string;
-export function redactApiKey(key: string): string;
+export function redactApiKey(key: string, replacement?: string): string;
 ```
 
 ### Deduplication
 
 ```typescript
 // deduplicate.ts
-export interface DedupeOptions {
-  cooldownSeconds: number;
-  stateDir?: string;
-}
-
-export function checkDedupe(
-  key: string,
-  options: DedupeOptions
-): boolean;
+export function checkDedupe(key: string, cooldownSeconds: number): boolean;
+export function createDedupeChecker(options: DedupeOptions): DedupeChecker;
 ```
 
-## Usage Examples
-
-### Using @tan-yong-sheng/core
+### Key Rotation
 
 ```typescript
-import { retry, randomUserAgent, anonymizeKey } from '@tan-yong-sheng/core';
-
-const result = await retry({
-  fn: () => makeRequest({ url: 'https://api.example.com' }),
-  maxAttempts: 3,
-  initialDelay: 1000,
-});
+// rotate.ts
+export function rotateKeys(envVar: string, stateKey: string): string;
 ```
 
-### Using @tan-yong-sheng/serper
+## Adding New Features
 
-```typescript
-import { search, scrape } from '@tan-yong-sheng/serper';
+To add a new feature to the consolidated package:
 
-const results = await search('TypeScript best practices', {
-  num: 10,
-  gl: 'us',
-  hl: 'en',
-});
+1. **Add library code** in `src/<feature>/`
+   - `index.ts` - Main exports
+   - `types.ts` - TypeScript types
 
-const page = await scrape('https://example.com', {
-  markdown: true,
-});
-```
+2. **Add CLI** in `src/cli/<feature>.ts`
+   - Create CLI entry point
+   - Update `package.json` bin field
 
-### Using @tan-yong-sheng/ntfy
+3. **Add export** in `package.json`
+   ```json
+   "exports": {
+     "./<feature>": {
+       "import": "./dist/<feature>/index.js",
+       "types": "./dist/<feature>/index.d.ts"
+     }
+   }
+   ```
 
-```typescript
-import { send } from '@tan-yong-sheng/ntfy';
-
-await send({
-  title: 'Task Complete',
-  message: 'Build finished successfully',
-  priority: 'high',
-  tags: ['white_check_mark'],
-});
-```
-
-## Adding a New Skill
-
-**IMPORTANT:** When creating new skills that require command-line execution (CLI tools), you **MUST** build them as npm packages and publish to GitHub Packages. This enables:
-- Global installation via `npm install -g`
-- Easy distribution and version management
-- Dependency management through npm
-- Consistent CLI interface across all skills
-
-### Workflow for Creating New Skills with CLI
-
-1. **Create Package Structure** - Set up TypeScript package in `packages/`
-2. **Implement Functionality** - Use `@tan-yong-sheng/core` utilities
-3. **Add CLI Wrapper** - Create executable CLI entry point
-4. **Build & Test** - Compile TypeScript and verify locally
-5. **Publish to GitHub Packages** - Make available for global install
-6. **Create Skill Definition** - Add SKILL.md with installation instructions
-
-### 1. Create the skill package
-
-```bash
-mkdir -p packages/my-skill/src
-```
-
-### 2. Create package.json
-
-```json
-{
-  "name": "@tan-yong-sheng/my-skill",
-  "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "dependencies": {
-    "@tan-yong-sheng/core": "^1.0.0"
-  }
-}
-```
-
-### 3. Implement using core utilities
-
-```typescript
-// packages/my-skill/src/index.ts
-import { retry, randomUserAgent } from '@tan-yong-sheng/core';
-
-export async function myFeature(options: MyOptions): Promise<Result> {
-  return retry({
-    fn: () => makeApiCall(options),
-    maxAttempts: 3,
-  });
-}
-```
-
-### 4. Create skill wrapper
-
-```typescript
-// skills/my-skill/scripts/my-skill.ts
-import { myFeature } from '@tan-yong-sheng/my-skill';
-import { parseArgs } from '@tan-yong-sheng/core';
-
-async function main() {
-  const args = parseArgs(process.argv, {
-    query: { type: 'string', required: true },
-  });
-
-  const result = await myFeature({ query: args.query });
-  console.log(result);
-}
-
-main();
-```
-
-### 5. Add CLI binary configuration
-
-Update `package.json` to include bin field:
-
-```json
-{
-  "name": "@tan-yong-sheng/my-skill",
-  "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "bin": {
-    "my-skill": "dist/cli.js"
-  },
-  "files": [
-    "dist/"
-  ],
-  "dependencies": {
-    "@tan-yong-sheng/core": "^1.0.0"
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
-  }
-}
-```
-
-### 6. Build and publish
-
-```bash
-# Build the package
-cd packages/my-skill
-npm run build
-
-# Test locally
-npm link
-my-skill --help
-
-# Publish to GitHub Packages
-npm publish
-
-# Users can now install globally
-npm install -g @tan-yong-sheng/my-skill
-```
-
-### 7. Create skill documentation
-
-Create `skills/my-skill/SKILL.md` with installation instructions:
-
-```markdown
-## Setup
-
-### Install from GitHub Packages (Recommended)
-
-\`\`\`bash
-# Configure npm to use GitHub Packages
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
-
-# Authenticate with GitHub
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-
-# Install globally
-npm install -g @tan-yong-sheng/my-skill
-\`\`\`
-
-Now `my-skill` command is available globally!
-```
+4. **Build and test**
+   ```bash
+   npm run build
+   node dist/cli/<feature>.js --help
+   ```
 
 ## Publishing
 
 ### Automated Publishing via GitHub Actions
 
-Packages are automatically built, tested, and published when you create a version tag:
+Create and push a version tag:
 
 ```bash
-# Create and push a version tag
-git tag v1.0.3
-git push origin v1.0.3
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 This triggers the `.github/workflows/publish.yml` workflow which:
-1. **Builds** all packages in the monorepo
-2. **Tests** CLI functionality and package imports
-3. **Publishes** to GitHub Packages (https://npm.pkg.github.com)
+1. Builds the package
+2. Tests CLI functionality
+3. Publishes to npmjs.com
 
 ### Manual Publishing
 
-If you need to publish manually:
-
-### 1. Build all packages
-
 ```bash
-# Build core first
-cd packages/core
+# Build
 npm run build
 
-# Build dependent packages
-cd ../serper
-npm run build
+# Test locally
+npm link
+cc-serper --help
+cc-ntfy --help
 
-cd ../ntfy
-npm run build
-```
-
-### 2. Publish to GitHub Packages
-
-```bash
-# Configure npm for GitHub Packages
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
-
-# Login with GitHub Personal Access Token (needs write:packages scope)
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-
-# Publish each package (core first)
-cd packages/core
-npm publish
-
-cd ../serper
-npm publish
-
-cd ../ntfy
-npm publish
-```
-
-### 3. Verify publication
-
-Check packages at: https://github.com/tan-yong-sheng?tab=packages
-
-### 4. Install and test globally
-
-```bash
-# Install published package globally
-npm install -g @tan-yong-sheng/serper
-
-# Test CLI
-serper --help
-serper search "test query" --json
+# Publish to npmjs.com
+npm login
+npm publish --access public
 ```
 
 ## Environment Variables
 
-All packages support these environment variables:
-
 | Variable | Description |
 |----------|-------------|
 | `SERPER_API_KEY` | API key for Serper.dev |
-| `NTFY_BASE_URL` | ntfy server URL |
+| `SERPER_API_KEYS` | Multiple keys for rotation (semicolon-separated) |
+| `NTFY_BASE_URL` | ntfy server URL (default: https://ntfy.sh) |
 | `NTFY_TOPIC` | ntfy topic |
 | `NTFY_API_KEY` | ntfy authentication token |
 
 ## Version Compatibility
 
-| Package | Required Node | Dependencies |
-|---------|---------------|--------------|
-| `@tan-yong-sheng/core` | >=18.0.0 | None |
-| `@tan-yong-sheng/serper` | >=18.0.0 | @tan-yong-sheng/core |
-| `@tan-yong-sheng/ntfy` | >=18.0.0 | @tan-yong-sheng/core |
+| Package | Required Node |
+|---------|---------------|
+| `@tan-yong-sheng/cc-devkits` | >=18.0.0 |
 
-## Migration Guide
+## Migration from v1.x
 
-### From inline code to library
+If you were using the old separate packages:
 
-1. Identify shared utilities in your skill
-2. Move them to `@tan-yong-sheng/core`
-3. Update skill to import from core
-4. Publish core package
-5. Update skill's package.json to depend on core
-6. Rebuild and test
-
-### Example migration
-
-**Before (inline):**
-
-```typescript
-// skills/my-skill/src/index.ts
-function randomJitter() {
-  const jitter = 100 + Math.floor(Math.random() * 400);
-  return new Promise(r => setTimeout(r, jitter));
-}
+**Before (v1.x):**
+```bash
+npm install -g @tan-yong-sheng/serper @tan-yong-sheng/ntfy
+serper search "query"
+ntfy --title "Test" --message "Hello"
 ```
 
-**After (using core):**
+**After (v2.x):**
+```bash
+npm install -g @tan-yong-sheng/cc-devkits
+cc-serper search "query"
+cc-ntfy --title "Test" --message "Hello"
+```
 
+Library imports:
 ```typescript
-// skills/my-skill/src/index.ts
-import { randomJitter } from '@tan-yong-sheng/core';
+// Before
+import { search } from '@tan-yong-sheng/serper';
+import { send } from '@tan-yong-sheng/ntfy';
+
+// After
+import { search } from '@tan-yong-sheng/cc-devkits/serper';
+import { send } from '@tan-yong-sheng/cc-devkits/ntfy';
 ```

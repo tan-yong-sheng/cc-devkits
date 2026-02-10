@@ -1,4 +1,4 @@
-name: Publish to GitHub Packages
+name: Publish to npmjs.com
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   build-and-test:
@@ -23,27 +22,23 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build all packages
-        run: npm run build:all
+      - name: Build package
+        run: npm run build
 
-      - name: Test CLI help
+      - name: Test CLI help commands
         run: |
-          echo "Testing Serper CLI..."
-          node packages/serper/dist/cli.js --help
+          echo "Testing cc-serper CLI..."
+          node dist/cli/serper.js --help
 
-          echo "Testing ntfy CLI..."
-          node packages/ntfy/dist/cli.js --help
+          echo "Testing cc-ntfy CLI..."
+          node dist/cli/ntfy.js --help
 
-      - name: Verify package imports
+      - name: Verify library imports
         run: |
-          echo "Verifying @tan-yong-sheng/core..."
-          node -e "import('@tan-yong-sheng/core').then(m => console.log('✓ core:', Object.keys(m)))"
-
-          echo "Verifying @tan-yong-sheng/serper..."
-          node -e "import('@tan-yong-sheng/serper').then(m => console.log('✓ serper:', Object.keys(m)))"
-
-          echo "Verifying @tan-yong-sheng/ntfy..."
-          node -e "import('@tan-yong-sheng/ntfy').then(m => console.log('✓ ntfy:', Object.keys(m)))"
+          echo "Verifying library exports..."
+          node -e "import('./dist/lib/index.js').then(m => console.log('✓ lib:', Object.keys(m)))"
+          node -e "import('./dist/serper/index.js').then(m => console.log('✓ serper:', Object.keys(m)))"
+          node -e "import('./dist/ntfy/index.js').then(m => console.log('✓ ntfy:', Object.keys(m)))"
 
   publish:
     needs: build-and-test
@@ -54,68 +49,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@tan-yong-sheng'
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Install root dependencies
+      - name: Install dependencies
         run: npm install
 
-      - name: Build all packages (ensures dependencies are available)
-        run: npm run build:all
+      - name: Build package
+        run: npm run build
 
-      # Publish core first (no dependencies)
-      - name: Configure and publish @tan-yong-sheng/core
-        working-directory: packages/core
-        run: |
-          node -e "
-          const fs = require('fs');
-          const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkgJson.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
-          pkgJson.repository = {
-            type: 'git',
-            url: 'git+https://github.com/${{ github.repository }}.git',
-            directory: 'packages/core'
-          };
-          fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
-          "
-          npm publish
+      - name: Publish to npmjs.com
+        run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Publish serper (depends on core)
-      - name: Configure and publish @tan-yong-sheng/serper
-        working-directory: packages/serper
-        run: |
-          node -e "
-          const fs = require('fs');
-          const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkgJson.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
-          pkgJson.repository = {
-            type: 'git',
-            url: 'git+https://github.com/${{ github.repository }}.git',
-            directory: 'packages/serper'
-          };
-          fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
-          "
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Publish ntfy (depends on core)
-      - name: Configure and publish @tan-yong-sheng/ntfy
-        working-directory: packages/ntfy
-        run: |
-          node -e "
-          const fs = require('fs');
-          const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkgJson.publishConfig = { registry: 'https://npm.pkg.github.com', access: 'public' };
-          pkgJson.repository = {
-            type: 'git',
-            url: 'git+https://github.com/${{ github.repository }}.git',
-            directory: 'packages/ntfy'
-          };
-          fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
-          "
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

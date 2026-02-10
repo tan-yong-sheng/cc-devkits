@@ -1,121 +1,80 @@
 # Publishing Guide - cc-devkits
 
-Complete guide for publishing npm packages to GitHub Packages and installing them globally.
+Complete guide for publishing and installing the cc-devkits npm package.
 
-## 📦 Published Packages
+## 📦 Published Package
 
-All packages are available at: https://github.com/tan-yong-sheng?tab=packages
+Available at: https://www.npmjs.com/package/@tan-yong-sheng/cc-devkits
 
 | Package | Version | Description |
 |---------|---------|-------------|
-| `@tan-yong-sheng/core` | 1.0.0 | Core utilities (HTTP, retry, CLI parsing) |
-| `@tan-yong-sheng/serper` | 1.0.0 | Google Search & web scraping |
-| `@tan-yong-sheng/ntfy` | 1.0.0 | Push notifications via ntfy |
+| `@tan-yong-sheng/cc-devkits` | 2.0.0 | Google Search, web scraping, and push notifications |
 
 ## 🚀 Quick Start - Global Installation
 
-**⚠️ Important:** GitHub Packages requires authentication even for public repositories. This is a GitHub platform limitation and cannot be disabled.
-
-### Why Authentication is Required
-
-GitHub Packages differs from npmjs.org:
-- **npmjs.org**: Public packages can be installed without authentication
-- **GitHub Packages**: ALL packages require authentication (even public ones)
-
-This is designed for enterprise/private use cases. For truly public packages, use npmjs.org.
-
-### One-Time Setup
-
-#### Step 1: Create Personal Access Token
-
-1. Visit: https://github.com/settings/tokens/new
-2. Token name: `npm-packages` (or any name)
-3. Expiration: Choose duration (90 days, 1 year, or no expiration)
-4. Select scopes:
-   - ☑️ `read:packages` (for installing packages)
-   - ☑️ `write:packages` (only if you need to publish)
-5. Click "Generate token"
-6. **Copy the token immediately** (you won't see it again!)
-
-#### Step 2: Configure npm for GitHub Packages
+No authentication required for public packages on npmjs.com:
 
 ```bash
-# Set registry for @tan-yong-sheng scope
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
-```
-
-#### Step 3: Authenticate with GitHub
-
-```bash
-# Login using GitHub credentials
-# Username: your GitHub username
-# Password: the Personal Access Token from Step 1
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-```
-
-#### Step 4: Install Packages Globally
-
-```bash
-# Install Serper CLI globally
-npm install -g @tan-yong-sheng/serper
-
-# Install ntfy CLI globally
-npm install -g @tan-yong-sheng/ntfy
+# Install globally
+npm install -g @tan-yong-sheng/cc-devkits
 
 # Verify installation
-serper --help
-ntfy --help
+cc-serper --help
+cc-ntfy --help
 ```
 
-## 🔨 Alternative: Build from Source (No Authentication)
+This provides two CLI commands:
+- `cc-serper` - Google Search and web scraping
+- `cc-ntfy` - Push notifications via ntfy
 
-For personal setup without GitHub authentication:
+## 🔨 Alternative: Build from Source
+
+For development or contributing:
 
 ```bash
 # Clone and build
 git clone https://github.com/tan-yong-sheng/cc-devkits.git
 cd cc-devkits
 npm install
-npm run build:all
+npm run build
 
-# Link packages globally
-cd packages/serper && npm link && cd ../..
-cd packages/ntfy && npm link && cd ../..
+# Link for global use
+npm link
 
 # Verify
-serper --help
-ntfy --help
+cc-serper --help
+cc-ntfy --help
 ```
 
 ## 🔧 Usage Examples
 
-### Serper (Google Search & Web Scraping)
+### cc-serper (Google Search & Web Scraping)
 
 ```bash
 # Search Google
-serper search "TypeScript best practices" --gl us --hl en --num 10
+cc-serper search "TypeScript best practices" --gl us --hl en --num 10
 
 # Get JSON output
-serper search "AI news" --json | jq '.organic[].title'
+cc-serper search "AI news" --json | jq '.organic[].title'
 
 # Scrape webpage with markdown
-serper scrape "https://example.com" --markdown
+cc-serper scrape "https://example.com" --markdown
 
 # Regional search
-serper search "restaurants" --gl my --location "Kuala Lumpur"
+cc-serper search "restaurants" --gl my --location "Kuala Lumpur"
 ```
 
-### ntfy (Push Notifications)
+### cc-ntfy (Push Notifications)
 
 ```bash
 # Send notification
-ntfy --title "Build Complete" --message "All tests passed" --priority high
+cc-ntfy --title "Build Complete" --message "All tests passed" --priority high
 
 # With tags
-ntfy --title "Alert" --message "High CPU usage" --tags warning,computer
+cc-ntfy --title "Alert" --message "High CPU usage" --tags warning,computer
 
 # With URL click action
-ntfy --title "New PR" --message "Review needed" --click "https://github.com/..."
+cc-ntfy --title "New PR" --message "Review needed" --click "https://github.com/..."
 ```
 
 ## 📝 Environment Variables
@@ -125,6 +84,9 @@ ntfy --title "New PR" --message "Review needed" --click "https://github.com/..."
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
 export SERPER_API_KEY="your-api-key-from-serper.dev"
+
+# OR use multiple keys for rotation
+export SERPER_API_KEYS="key1;key2;key3"
 ```
 
 Get free API key: https://serper.dev (2500 searches/month)
@@ -146,7 +108,7 @@ GitHub Actions automatically publishes when you push a version tag:
 
 ```bash
 # Build and test locally first
-npm run build:all
+npm run build
 
 # Commit changes
 git add .
@@ -154,33 +116,28 @@ git commit -m "Your changes"
 git push origin main
 
 # Create and push version tag
-git tag v1.0.3
-git push origin v1.0.3
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 The workflow will:
-1. ✅ Build all packages
-2. ✅ Run E2E tests
-3. ✅ Publish to GitHub Packages
+1. ✅ Build the package
+2. ✅ Test CLI commands
+3. ✅ Publish to npmjs.com
 
 Monitor at: https://github.com/tan-yong-sheng/cc-devkits/actions
 
 ### Manual Publishing
 
 ```bash
-# 1. Build all packages
-npm run build:all
+# 1. Build
+npm run build
 
-# 2. Configure npm (one-time setup)
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
+# 2. Login to npm (if not already logged in)
+npm login
 
-# 3. Login with write:packages token
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-
-# 4. Publish packages (order matters - core first)
-cd packages/core && npm publish && cd ../..
-cd packages/serper && npm publish && cd ../..
-cd packages/ntfy && npm publish && cd ../..
+# 3. Publish
+npm publish --access public
 ```
 
 ## 🛠️ Development Setup
@@ -192,121 +149,73 @@ cd packages/ntfy && npm publish && cd ../..
 git clone https://github.com/tan-yong-sheng/cc-devkits.git
 cd cc-devkits
 
-# Install dependencies (uses workspaces)
+# Install dependencies
 npm install
 
-# Build all packages
-npm run build:all
+# Build
+npm run build
 
 # Test locally with npm link
-cd packages/serper
 npm link
-serper --help
+cc-serper --help
+cc-ntfy --help
 
 # Unlink when done
-npm unlink -g @tan-yong-sheng/serper
+npm unlink -g @tan-yong-sheng/cc-devkits
 ```
 
 ### Testing Before Publishing
 
 ```bash
-# Build packages
-npm run build:all
+# Build
+npm run build
 
 # Test CLI help commands
-node packages/serper/dist/cli.js --help
-node packages/ntfy/dist/cli.js --help
+node dist/cli/serper.js --help
+node dist/cli/ntfy.js --help
 
-# Test imports
-node -e "import('@tan-yong-sheng/core').then(m => console.log(Object.keys(m)))"
+# Test library imports
+node -e "import('./dist/lib/index.js').then(m => console.log(Object.keys(m)))"
+node -e "import('./dist/serper/index.js').then(m => console.log(Object.keys(m)))"
+node -e "import('./dist/ntfy/index.js').then(m => console.log(Object.keys(m)))"
 ```
 
-## 📚 Creating New Skills
+## 📚 Adding New Features
 
-When creating new CLI-based skills, you **must** build them as npm packages:
+To add a new feature to the consolidated package:
 
-### 1. Create Package Structure
+### 1. Create Library Code
 
 ```bash
-mkdir -p packages/my-skill/src
-cd packages/my-skill
+mkdir -p src/<feature>
 ```
 
-### 2. Create package.json
-
-```json
-{
-  "name": "@tan-yong-sheng/my-skill",
-  "version": "1.0.0",
-  "description": "My awesome skill",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "bin": {
-    "my-skill": "dist/cli.js"
-  },
-  "files": ["dist/"],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@tan-yong-sheng/core": "^1.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
-}
-```
-
-### 3. Create tsconfig.json
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ES2022",
-    "moduleResolution": "node",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
-}
-```
-
-### 4. Implement Functionality
-
+Create `src/<feature>/index.ts`:
 ```typescript
-// src/index.ts
-import { retry, randomUserAgent } from '@tan-yong-sheng/core';
-
 export async function myFeature(options: MyOptions): Promise<Result> {
-  return retry({
-    fn: () => makeApiCall(options),
-    maxAttempts: 3,
-  });
+  // Implementation
 }
 ```
 
-### 5. Create CLI Entry Point
-
+Create `src/<feature>/types.ts`:
 ```typescript
-// src/cli.ts
+export interface MyOptions {
+  // Type definitions
+}
+```
+
+### 2. Create CLI Entry Point
+
+Create `src/cli/<feature>.ts`:
+```typescript
 #!/usr/bin/env node
-import { myFeature } from './index.js';
-import { parseArgs } from '@tan-yong-sheng/core';
+import { myFeature } from '../<feature>/index.js';
+import { parseArgs } from '../lib/index.js';
 
 async function main() {
   const args = parseArgs(process.argv.slice(2), {
-    query: { type: 'string', required: true, description: 'Search query' },
-    verbose: { type: 'boolean', short: 'v', description: 'Verbose output' },
+    query: { type: 'string', required: true },
+    verbose: { type: 'boolean', short: 'v' },
   });
 
   const result = await myFeature(args);
@@ -316,139 +225,93 @@ async function main() {
 main().catch(console.error);
 ```
 
-### 6. Build and Test
+### 3. Update package.json
+
+Add to `bin` field:
+```json
+{
+  "bin": {
+    "cc-serper": "dist/cli/serper.js",
+    "cc-ntfy": "dist/cli/ntfy.js",
+    "cc-<feature>": "dist/cli/<feature>.js"
+  }
+}
+```
+
+Add to `exports` field:
+```json
+{
+  "exports": {
+    "./<feature>": {
+      "import": "./dist/<feature>/index.js",
+      "types": "./dist/<feature>/index.d.ts"
+    }
+  }
+}
+```
+
+### 4. Build and Test
 
 ```bash
-# Build
 npm run build
-
-# Test locally
-npm link
-my-skill --help
-
-# Test functionality
-my-skill --query "test"
+node dist/cli/<feature>.js --help
 ```
 
-### 7. Publish
+### 5. Publish
 
 ```bash
-# Add build script to main package.json
-cd ../..
-npm pkg set scripts.build:my-skill="cd packages/my-skill && npm run build"
-
-# Add to build:all script
-npm pkg set scripts.build:all="npm run build:core && npm run build:serper && npm run build:ntfy && npm run build:my-skill"
-
-# Create version tag to trigger automated publish
 git add .
-git commit -m "Add my-skill package"
+git commit -m "Add <feature> feature"
 git push origin main
-git tag v1.0.3
-git push origin v1.0.3
-```
-
-### 8. Create Skill Documentation
-
-```bash
-mkdir -p skills/my-skill
-```
-
-Create `skills/my-skill/SKILL.md`:
-
-```markdown
----
-name: my-skill
-description: Brief description of what your skill does
-homepage: https://example.com
-metadata: {"openclaw":{"emoji":"🎯","requires":{"bins":["node"],"env":["MY_SKILL_API_KEY"]},"primaryEnv":"MY_SKILL_API_KEY"}}
----
-
-# 🎯 My Skill
-
-## Setup
-
-### Install from GitHub Packages (Recommended)
-
-\`\`\`bash
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-npm install -g @tan-yong-sheng/my-skill
-\`\`\`
-
-## Usage
-
-\`\`\`bash
-my-skill --query "example"
-\`\`\`
+git tag v2.0.1
+git push origin v2.0.1
 ```
 
 ## 🔍 Troubleshooting
 
-### Authentication Issues
-
-```bash
-# Check current registry configuration
-npm config get @tan-yong-sheng:registry
-
-# Check if logged in
-npm whoami --registry=https://npm.pkg.github.com
-
-# Re-login if needed
-npm logout --registry=https://npm.pkg.github.com
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-```
-
 ### Package Not Found
 
 ```bash
-# Verify package exists
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-  https://npm.pkg.github.com/@tan-yong-sheng/serper
-
 # Clear npm cache
 npm cache clean --force
+
+# Verify package exists
+npm view @tan-yong-sheng/cc-devkits
 ```
-
-### Permission Denied
-
-Ensure your Personal Access Token has:
-- `read:packages` scope for installing
-- `write:packages` scope for publishing
 
 ### Build Failures
 
 ```bash
 # Clean and rebuild
 npm run clean
-rm -rf node_modules packages/*/node_modules
+rm -rf node_modules
 npm install
-npm run build:all
+npm run build
+```
+
+### Permission Denied
+
+Ensure you're logged in to npm:
+```bash
+npm whoami
+npm login
 ```
 
 ## 📊 CI/CD Workflows
 
-### CI Workflow (`.github/workflows/ci.yml`)
-
-Runs on every push and pull request:
-- ✅ Builds all packages
-- ✅ Runs E2E verification tests
-- ✅ Validates CLI help commands work
-
 ### Publish Workflow (`.github/workflows/publish.yml`)
 
 Runs when version tags are pushed:
-- ✅ Builds all packages
-- ✅ Runs comprehensive tests
-- ✅ Verifies package imports
-- ✅ Publishes to GitHub Packages in parallel
+- ✅ Builds the package
+- ✅ Tests CLI commands
+- ✅ Publishes to npmjs.com
 
 Monitor workflows: https://github.com/tan-yong-sheng/cc-devkits/actions
 
 ## 📖 Resources
 
-- **GitHub Packages Docs**: https://docs.github.com/en/packages
-- **npm Packages Guide**: https://docs.npmjs.com/packages-and-modules
+- **npm Package**: https://www.npmjs.com/package/@tan-yong-sheng/cc-devkits
+- **npm Documentation**: https://docs.npmjs.com
 - **TypeScript Handbook**: https://www.typescriptlang.org/docs/
 - **Serper API**: https://serper.dev
 - **ntfy Documentation**: https://ntfy.sh
@@ -458,7 +321,7 @@ Monitor workflows: https://github.com/tan-yong-sheng/cc-devkits/actions
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Build and test locally
+4. Build and test locally: `npm run build`
 5. Submit a pull request
 
 All pull requests trigger CI checks automatically.

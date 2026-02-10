@@ -6,46 +6,61 @@ This document provides information about the project structure and how to contri
 
 ```
 cc-devkits/
-├── packages/                    # Monorepo packages
-│   ├── core/                   # Core utilities
-│   │   ├── src/
-│   │   │   ├── http.ts        # HTTP requests
-│   │   │   ├── retry.ts       # Retry with backoff
-│   │   │   ├── cli.ts         # CLI parsing
-│   │   │   └── ...
-│   │   └── dist/              # Compiled output
-│   ├── serper/                # Serper API wrapper
-│   │   ├── src/
-│   │   │   ├── index.ts       # search(), scrape()
-│   │   │   └── cli.ts         # CLI entry point
-│   │   └── dist/
-│   └── ntfy/                  # ntfy client
-│       ├── src/
-│       │   ├── index.ts       # send()
-│       │   └── cli.ts         # CLI entry point
-│       └── dist/
+├── src/
+│   ├── lib/                    # Core utilities
+│   │   ├── http.ts            # HTTP requests
+│   │   ├── retry.ts           # Retry with backoff
+│   │   ├── cli.ts             # CLI parsing
+│   │   ├── user-agent.ts      # User agent rotation
+│   │   ├── anonymize.ts       # API key redaction
+│   │   ├── deduplicate.ts     # Deduplication logic
+│   │   ├── rotate.ts          # API key rotation
+│   │   ├── types.ts           # Shared types
+│   │   └── index.ts           # Main exports
+│   │
+│   ├── serper/                # Serper library
+│   │   ├── index.ts           # search(), scrape()
+│   │   └── types.ts           # Serper types
+│   │
+│   ├── ntfy/                  # ntfy library
+│   │   ├── index.ts           # send(), sendWithDedupe()
+│   │   └── types.ts           # ntfy types
+│   │
+│   ├── cli/                   # CLI entry points
+│   │   ├── serper.ts          # cc-serper CLI
+│   │   └── ntfy.ts            # cc-ntfy CLI
+│   │
+│   ├── hooks/                 # Claude Code hooks
+│   │   └── ntfy/
+│   │       └── notify.ts      # Hook script
+│   │
+│   └── skills/                # Skill scripts
+│       └── serper/
+│           └── scripts/
+│               └── serper.ts
+│
+├── dist/                      # Compiled output
+├── hooks/
+│   └── hooks.json            # Hook configuration
 ├── skills/
 │   └── serper/
-│       └── SKILL.md           # Skill documentation
-├── hooks/
-│   └── ntfy/
-│       ├── hook.json         # Hook registrations
-│       └── README.md         # Hook documentation
+│       └── SKILL.md          # Skill documentation
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml            # Build & test
-│       └── publish.yml       # Publish to GitHub Packages
-├── PUBLISHING.md             # Publishing guide
-├── AGENTS.md                 # Architecture docs
-└── package.json
+│       └── publish.yml       # Publish to npmjs.com
+├── docs/                     # Documentation
+├── package.json              # Single package config
+├── tsconfig.json             # TypeScript config
+├── README.md
+└── AGENTS.md                 # Architecture docs
 ```
 
 ## 🛠️ Development
 
-### Build All Packages
+### Build
 
 ```bash
-npm run build:all
+npm run build
 ```
 
 ### Watch Mode
@@ -57,31 +72,58 @@ npm run dev
 ### Test Locally
 
 ```bash
-# Link package for testing
-cd packages/serper
+# Build first
+npm run build
+
+# Test CLIs
+node dist/cli/serper.js --help
+node dist/cli/ntfy.js --help
+
+# Link for global testing
 npm link
-serper --help
+cc-serper --help
+cc-ntfy --help
 
 # Unlink when done
-npm unlink -g @tan-yong-sheng/serper
+npm unlink -g @tan-yong-sheng/cc-devkits
 ```
 
-### Publishing
-
-Packages are automatically published via GitHub Actions when you push a version tag:
+### Clean
 
 ```bash
-git tag v1.0.3
-git push origin v1.0.3
+npm run clean
 ```
 
-See [INSTALLATION.md](./INSTALLATION.md) for installation instructions and [PUBLISHING.md](../PUBLISHING.md) for manual publishing details.
+## 🚀 Publishing
 
-## 🚀 CI/CD
+### Automated Publishing via GitHub Actions
+
+Create and push a version tag:
+
+```bash
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+This triggers the workflow to publish to npmjs.com.
+
+### Manual Publishing
+
+```bash
+# Build
+npm run build
+
+# Login to npm
+npm login
+
+# Publish
+npm publish --access public
+```
+
+## 🔄 CI/CD
 
 GitHub Actions workflows:
-- **CI** - Runs on every push/PR (build, test, verify)
-- **Publish** - Runs on version tags (build, test, publish to GitHub Packages)
+- **Publish** - Runs on version tags (build, test, publish to npmjs.com)
 
 Monitor: https://github.com/tan-yong-sheng/cc-devkits/actions
 
@@ -90,5 +132,25 @@ Monitor: https://github.com/tan-yong-sheng/cc-devkits/actions
 1. Fork the repository
 2. Create feature branch
 3. Make changes
-4. Build and test: `npm run build:all`
+4. Build and test: `npm run build`
 5. Submit pull request
+
+## Adding New Features
+
+To add a new feature:
+
+1. **Create library code** in `src/<feature>/`
+   - `index.ts` - Main exports
+   - `types.ts` - TypeScript types
+
+2. **Add CLI** in `src/cli/<feature>.ts`
+
+3. **Update package.json**
+   - Add to `bin` field
+   - Add to `exports` field
+
+4. **Build and test**
+   ```bash
+   npm run build
+   node dist/cli/<feature>.js --help
+   ```

@@ -13,54 +13,13 @@ TypeScript Google Search and web scraping with built-in retry, exponential backo
 
 ## Setup
 
-### Install from GitHub Packages
-
-**Note:** GitHub Packages requires authentication even for public packages. This is a one-time setup.
-
-#### One-Time Setup (5 minutes)
-
-1. **Create GitHub Personal Access Token** (if you don't have one):
-   - Go to: https://github.com/settings/tokens/new
-   - Token name: `npm-packages` (or any name you prefer)
-   - Select scope: ☑️ `read:packages`
-   - Click "Generate token"
-   - **Copy the token** (you won't see it again!)
-
-2. **Configure npm**:
-```bash
-# Set registry for @tan-yong-sheng scope
-npm config set @tan-yong-sheng:registry https://npm.pkg.github.com
-
-# Login (use your GitHub username and the token as password)
-npm login --registry=https://npm.pkg.github.com --scope=@tan-yong-sheng
-```
-
-3. **Install globally**:
-```bash
-npm install -g @tan-yong-sheng/serper
-```
-
-4. **Verify**:
-```bash
-serper --help
-```
-
-✅ Done! The `serper` command is now available globally.
-
-### Build from Source (Alternative)
-
-If you prefer not to authenticate with GitHub Packages:
+### Install from npm
 
 ```bash
-git clone https://github.com/tan-yong-sheng/cc-devkits.git
-cd cc-devkits
-npm install
-npm run build:all
-
-# Link for global use
-cd packages/serper
-npm link
+npm install -g @tan-yong-sheng/cc-devkits
 ```
+
+This installs the `cc-serper` CLI command.
 
 ### API Key Setup
 
@@ -78,24 +37,24 @@ export SERPER_API_KEY="your-api-key-here"
 
 1. **Search Malaysia news:**
 ```bash
-serper search "Malaysia news after:2026-01-28" --gl my --hl en --num 10
+cc-serper search "Malaysia news after:2026-01-28" --gl my --hl en --num 10
 ```
 
 2. **Scrape webpage:**
 ```bash
-serper scrape "https://example.com" --markdown
+cc-serper scrape "https://example.com" --markdown
 ```
 
 3. **JSON output for scripting:**
 ```bash
-serper search "AI" --json | jq '.organic[].title'
+cc-serper search "AI" --json | jq '.organic[].title'
 ```
 
 ## Commands
 
 ### Search
 ```bash
-serper search <query> [options]
+cc-serper search <query> [options]
 ```
 
 **Options:**
@@ -110,21 +69,21 @@ serper search <query> [options]
 **Examples:**
 ```bash
 # Regional search
-serper search "restaurants" --gl my --hl en --location "Kuala Lumpur"
+cc-serper search "restaurants" --gl my --hl en --location "Kuala Lumpur"
 
 # Date-filtered news
-serper search "Malaysia news after:2026-01-28 before:2026-01-30" --gl my
+cc-serper search "Malaysia news after:2026-01-28 before:2026-01-30" --gl my
 
 # Site-specific
-serper search "tutorial site:github.com"
+cc-serper search "tutorial site:github.com"
 
 # File type
-serper search "report filetype:pdf"
+cc-serper search "report filetype:pdf"
 ```
 
 ### Scrape
 ```bash
-serper scrape <url> [options]
+cc-serper scrape <url> [options]
 ```
 
 **Options:**
@@ -134,8 +93,8 @@ serper scrape <url> [options]
 
 **Examples:**
 ```bash
-serper scrape "https://docs.example.com" --markdown
-serper scrape "https://blog.com" --json | jq -r '.text'
+cc-serper scrape "https://docs.example.com" --markdown
+cc-serper scrape "https://blog.com" --json | jq -r '.text'
 ```
 
 ## Search Operators

@@ -1,33 +1,14 @@
 #!/usr/bin/env node
 /**
- * Serper CLI - Google Search & Web Scraping
+ * cc-serper CLI - Google Search & Web Scraping
  */
 
-import { search, scrape } from './index.js';
-import { parseArgs } from '@tan-yong-sheng/core';
-import type { ArgOption } from '@tan-yong-sheng/core';
+import { search, scrape } from '../serper/index.js';
+import { parseArgs } from '../lib/index.js';
+import type { ArgOption } from '../lib/index.js';
 
 const VERSION = '1.0.0';
 
-interface SearchArgs {
-  query: string;
-  num?: number;
-  gl?: string;
-  hl?: string;
-  location?: string;
-  page?: number;
-  json?: boolean;
-  verbose?: boolean;
-}
-
-interface ScrapeArgs {
-  url: string;
-  markdown?: boolean;
-  json?: boolean;
-  offset?: number;
-  lines?: number;
-  verbose?: boolean;
-}
 
 const searchOptions: Record<string, ArgOption> = {
   query: { long: 'query', type: 'string', required: true },
@@ -125,8 +106,8 @@ async function cmdScrape(args: string[]): Promise<void> {
 }
 
 function showHelp(): void {
-  console.log('Serper CLI - Google Search & Web Scraping');
-  console.log('Usage: serper <command> [options]');
+  console.log('cc-serper CLI - Google Search & Web Scraping');
+  console.log('Usage: cc-serper <command> [options]');
   console.log('');
   console.log('Commands:');
   console.log('  search <query>    Search Google');
@@ -152,8 +133,8 @@ function showHelp(): void {
   console.log('  SERPER_API_KEY         API key for Serper.dev');
   console.log('');
   console.log('Examples:');
-  console.log('  serper search "AI news" --gl us --hl en');
-  console.log('  serper scrape "https://example.com" --markdown');
+  console.log('  cc-serper search "AI news" --gl us --hl en');
+  console.log('  cc-serper scrape "https://example.com" --markdown');
 }
 
 async function main(): Promise<void> {
@@ -161,7 +142,7 @@ async function main(): Promise<void> {
   const command = args[0];
 
   if (command === '-v' || command === '--version') {
-    console.log(`serper version ${VERSION}`);
+    console.log(`cc-serper version ${VERSION}`);
     process.exit(0);
   }
 

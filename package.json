@@ -1,17 +1,32 @@
 {
-  "name": "cc-devkits",
-  "version": "1.0.0",
-  "description": "Claude Code plugin with ntfy hooks, serper web search/skills, and ai-vision-mcp integration",
+  "name": "@tan-yong-sheng/cc-devkits",
+  "version": "2.0.0",
+  "description": "Claude Code devkits - Google Search, web scraping, and push notifications via ntfy",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
+  "bin": {
+    "cc-serper": "dist/cli/serper.js",
+    "cc-ntfy": "dist/cli/ntfy.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/lib/index.js",
+      "require": "./dist/lib/index.js",
+      "types": "./dist/lib/index.d.ts"
+    },
+    "./serper": {
+      "import": "./dist/serper/index.js",
+      "require": "./dist/serper/index.js",
+      "types": "./dist/serper/index.d.ts"
+    },
+    "./ntfy": {
+      "import": "./dist/ntfy/index.js",
+      "require": "./dist/ntfy/index.js",
+      "types": "./dist/ntfy/index.d.ts"
+    }
+  },
   "scripts": {
-    "build:core": "cd packages/core && npm run build",
-    "build:serper": "cd packages/serper && npm run build",
-    "build:ntfy": "cd packages/ntfy && npm run build",
-    "build:all": "npm run build:core && npm run build:serper && npm run build:ntfy",
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
@@ -21,10 +36,13 @@
   },
   "keywords": [
     "claude-code",
-    "plugin",
-    "ntfy",
+    "devkits",
     "serper",
-    "mcp"
+    "google-search",
+    "web-scraping",
+    "ntfy",
+    "notifications",
+    "push-notifications"
   ],
   "author": "tan-yong-sheng",
   "license": "MIT",
@@ -32,17 +50,14 @@
     "type": "git",
     "url": "https://github.com/tan-yong-sheng/cc-devkits"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.3.0",
     "eslint": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0"
-  },
-  "dependencies": {
-    "dotenv": "^16.3.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
