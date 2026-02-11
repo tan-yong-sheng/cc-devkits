@@ -11,6 +11,7 @@ const VERSION = '1.0.0';
 
 
 const searchOptions: Record<string, ArgOption> = {
+  query: { long: 'query', type: 'string' },
   num: { short: 'n', long: 'num', type: 'number' },
   gl: { short: 'g', long: 'gl', type: 'string' },
   hl: { short: 'l', long: 'hl', type: 'string' },
@@ -21,6 +22,7 @@ const searchOptions: Record<string, ArgOption> = {
 };
 
 const scrapeOptions: Record<string, ArgOption> = {
+  url: { long: 'url', type: 'string' },
   markdown: { short: 'm', long: 'markdown', type: 'boolean' },
   json: { short: 'j', long: 'json', type: 'boolean' },
   offset: { long: 'offset', type: 'number' },
@@ -29,13 +31,18 @@ const scrapeOptions: Record<string, ArgOption> = {
 };
 
 async function cmdSearch(args: string[]): Promise<void> {
-  // First argument is the query (positional), rest are options
-  const query = args[0];
+  const parsed = parseArgs(args, searchOptions);
+
+  // Use --query flag if provided, otherwise use first positional argument
+  let query = parsed.query as string | undefined;
   if (!query) {
-    throw new Error('Query is required. Usage: cc-serper search <query> [options]');
+    const positional = parsed._ as string[] | undefined;
+    query = positional?.[0];
   }
 
-  const parsed = parseArgs(args.slice(1), searchOptions);
+  if (!query) {
+    throw new Error('Query is required. Usage: cc-serper search --query <query> [options]');
+  }
   const num = parsed.num as number | undefined;
   const gl = parsed.gl as string | undefined;
   const hl = parsed.hl as string | undefined;
@@ -68,13 +75,18 @@ async function cmdSearch(args: string[]): Promise<void> {
 }
 
 async function cmdScrape(args: string[]): Promise<void> {
-  // First argument is the URL (positional), rest are options
-  const url = args[0];
+  const parsed = parseArgs(args, scrapeOptions);
+
+  // Use --url flag if provided, otherwise use first positional argument
+  let url = parsed.url as string | undefined;
   if (!url) {
-    throw new Error('URL is required. Usage: cc-serper scrape <url> [options]');
+    const positional = parsed._ as string[] | undefined;
+    url = positional?.[0];
   }
 
-  const parsed = parseArgs(args.slice(1), scrapeOptions);
+  if (!url) {
+    throw new Error('URL is required. Usage: cc-serper scrape --url <url> [options]');
+  }
   const markdown = parsed.markdown as boolean | undefined;
   const json = parsed.json as boolean | undefined;
   const offset = parsed.offset as number | undefined;
@@ -116,8 +128,8 @@ function showHelp(): void {
   console.log('Usage: cc-serper <command> [options]');
   console.log('');
   console.log('Commands:');
-  console.log('  search <query>    Search Google');
-  console.log('  scrape <url>      Scrape webpage');
+  console.log('  search --query <query>    Search Google');
+  console.log('  scrape --url <url>        Scrape webpage');
   console.log('');
   console.log('Search Options:');
   console.log('  -n, --num <number>     Results count (default: 10)');
@@ -139,8 +151,8 @@ function showHelp(): void {
   console.log('  SERPER_API_KEY         API key for Serper.dev');
   console.log('');
   console.log('Examples:');
-  console.log('  cc-serper search "AI news" --gl us --hl en');
-  console.log('  cc-serper scrape "https://example.com" --markdown');
+  console.log('  cc-serper search --query "AI news" --gl us --hl en');
+  console.log('  cc-serper scrape --url "https://example.com" --markdown');
 }
 
 async function main(): Promise<void> {

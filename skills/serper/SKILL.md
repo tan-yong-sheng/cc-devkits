@@ -37,24 +37,24 @@ export SERPER_API_KEY="your-api-key-here"
 
 1. **Web search (Malaysia news):**
 ```bash
-cc-serper search "Malaysia news after:2026-01-28" --gl my --hl en --num 10
+cc-serper search --query "Malaysia news after:2026-01-28" --gl my --hl en --num 10
 ```
 
 2. **Scrape webpage:**
 ```bash
-cc-serper scrape "https://example.com" --markdown
+cc-serper scrape --url "https://example.com" --markdown
 ```
 
 3. **JSON output for scripting:**
 ```bash
-cc-serper search "AI" --json | jq '.organic[].title'
+cc-serper search --query "AI" --json | jq '.organic[].title'
 ```
 
 ## Commands
 
 ### Search
 ```bash
-cc-serper search <query> [options]
+cc-serper search --query <query> [options]
 ```
 
 **Options:**
@@ -69,21 +69,21 @@ cc-serper search <query> [options]
 **Examples:**
 ```bash
 # Regional search
-cc-serper search "restaurants" --gl my --hl en --location "Kuala Lumpur"
+cc-serper search --query "restaurants" --gl my --hl en --location "Kuala Lumpur"
 
 # Date-filtered news
-cc-serper search "Malaysia news after:2026-01-28 before:2026-01-30" --gl my
+cc-serper search --query "Malaysia news after:2026-01-28 before:2026-01-30" --gl my
 
 # Site-specific
-cc-serper search "tutorial site:github.com"
+cc-serper search --query "tutorial site:github.com"
 
 # File type
-cc-serper search "report filetype:pdf"
+cc-serper search --query "report filetype:pdf"
 ```
 
 ### Scrape
 ```bash
-cc-serper scrape <url> [options]
+cc-serper scrape --url <url> [options]
 ```
 
 **Options:**
@@ -93,8 +93,8 @@ cc-serper scrape <url> [options]
 
 **Examples:**
 ```bash
-cc-serper scrape "https://docs.example.com" --markdown
-cc-serper scrape "https://blog.com" --json | jq -r '.text'
+cc-serper scrape --url "https://docs.example.com" --markdown
+cc-serper scrape --url "https://blog.com" --json | jq -r '.text'
 ```
 
 ## Search Operators
