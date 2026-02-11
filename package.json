@@ -1,6 +1,6 @@
 {
   "name": "@tan-yong-sheng/cc-devkits",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Claude Code devkits - Google Search, web scraping, and push notifications via ntfy",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
