@@ -11,7 +11,6 @@ const VERSION = '1.0.0';
 
 
 const searchOptions: Record<string, ArgOption> = {
-  query: { long: 'query', type: 'string', required: true },
   num: { short: 'n', long: 'num', type: 'number' },
   gl: { short: 'g', long: 'gl', type: 'string' },
   hl: { short: 'l', long: 'hl', type: 'string' },
@@ -22,7 +21,6 @@ const searchOptions: Record<string, ArgOption> = {
 };
 
 const scrapeOptions: Record<string, ArgOption> = {
-  url: { long: 'url', type: 'string', required: true },
   markdown: { short: 'm', long: 'markdown', type: 'boolean' },
   json: { short: 'j', long: 'json', type: 'boolean' },
   offset: { long: 'offset', type: 'number' },
@@ -31,9 +29,13 @@ const scrapeOptions: Record<string, ArgOption> = {
 };
 
 async function cmdSearch(args: string[]): Promise<void> {
-  const parsed = parseArgs(args, searchOptions);
+  // First argument is the query (positional), rest are options
+  const query = args[0];
+  if (!query) {
+    throw new Error('Query is required. Usage: cc-serper search <query> [options]');
+  }
 
-  const query = parsed.query as string;
+  const parsed = parseArgs(args.slice(1), searchOptions);
   const num = parsed.num as number | undefined;
   const gl = parsed.gl as string | undefined;
   const hl = parsed.hl as string | undefined;
@@ -66,9 +68,13 @@ async function cmdSearch(args: string[]): Promise<void> {
 }
 
 async function cmdScrape(args: string[]): Promise<void> {
-  const parsed = parseArgs(args, scrapeOptions);
+  // First argument is the URL (positional), rest are options
+  const url = args[0];
+  if (!url) {
+    throw new Error('URL is required. Usage: cc-serper scrape <url> [options]');
+  }
 
-  const url = parsed.url as string;
+  const parsed = parseArgs(args.slice(1), scrapeOptions);
   const markdown = parsed.markdown as boolean | undefined;
   const json = parsed.json as boolean | undefined;
   const offset = parsed.offset as number | undefined;

@@ -1,6 +1,6 @@
 ---
 name: serper
-description: Google Search and web scraping via Serper API - TypeScript implementation with retry and jitter. Use when you need to search Google, scrape webpages, or gather information from the web. Supports advanced search operators (site:, filetype:, date filters), regional/language targeting, and markdown extraction.
+description: Web Search and web scraping via Serper API - TypeScript implementation with retry and jitter. Use when you need to search the web, scrape webpages, or gather information from the web. Supports advanced search operators (site:, filetype:, date filters), regional/language targeting, and markdown extraction.
 homepage: https://serper.dev
 metadata: {"openclaw":{"emoji":"🔍","requires":{"bins":["node"],"env":["SERPER_API_KEY"]},"primaryEnv":"SERPER_API_KEY"}}
 ---
@@ -35,7 +35,7 @@ export SERPER_API_KEY="your-api-key-here"
 
 ## Quick Start
 
-1. **Search Malaysia news:**
+1. **Web search (Malaysia news):**
 ```bash
 cc-serper search "Malaysia news after:2026-01-28" --gl my --hl en --num 10
 ```
