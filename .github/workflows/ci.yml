@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build:all
+      - run: npm run build
 
   e2e:
     needs: build
@@ -26,8 +26,8 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm run build:all
+      - run: npm run build
       - run: |
           echo "Running e2e verification"
-          node packages/serper/dist/cli.js --help >/tmp/serper-help
-          node packages/ntfy/dist/cli.js --help >/tmp/ntfy-help
+          node dist/cli/serper.js --help >/tmp/serper-help
+          node dist/cli/ntfy.js --help >/tmp/ntfy-help
