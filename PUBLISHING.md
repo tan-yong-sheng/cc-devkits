@@ -52,16 +52,16 @@ cc-ntfy --help
 
 ```bash
 # Search Google
-cc-serper search "TypeScript best practices" --gl us --hl en --num 10
+cc-serper search --query "TypeScript best practices" --gl us --hl en --num 10
 
 # Get JSON output
-cc-serper search "AI news" --json | jq '.organic[].title'
+cc-serper search --query "AI news" --json | jq '.organic[].title'
 
 # Scrape webpage with markdown
-cc-serper scrape "https://example.com" --markdown
+cc-serper scrape --url "https://example.com" --markdown
 
 # Regional search
-cc-serper search "restaurants" --gl my --location "Kuala Lumpur"
+cc-serper search --query "restaurants" --gl my --location "Kuala Lumpur"
 ```
 
 ### cc-ntfy (Push Notifications)

@@ -117,10 +117,10 @@ The package uses conditional exports:
 
 ```bash
 # Search Google
-cc-serper search "AI news" --gl us --hl en --num 10
+cc-serper search --query "AI news" --gl us --hl en --num 10
 
 # Scrape webpage
-cc-serper scrape "https://example.com" --markdown
+cc-serper scrape --url "https://example.com" --markdown
 
 # Send notification
 cc-ntfy --title "Done" --message "Task complete" --priority high
@@ -316,7 +316,7 @@ ntfy --title "Test" --message "Hello"
 **After (v2.x):**
 ```bash
 npm install -g @tan-yong-sheng/cc-devkits
-cc-serper search "query"
+cc-serper search --query "query"
 cc-ntfy --title "Test" --message "Hello"
 ```
 

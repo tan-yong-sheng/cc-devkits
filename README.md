@@ -55,13 +55,13 @@ Detailed documentation has been moved to the `docs/` directory:
 ### cc-serper CLI
 ```bash
 # Search Google
-cc-serper search "TypeScript best practices" --gl us --hl en --num 10
+cc-serper search --query "TypeScript best practices" --gl us --hl en --num 10
 
 # Scrape webpage with markdown
-cc-serper scrape "https://example.com" --markdown
+cc-serper scrape --url "https://example.com" --markdown
 
 # JSON output for scripting
-cc-serper search "AI news" --json | jq '.organic[].title'
+cc-serper search --query "AI news" --json | jq '.organic[].title'
 ```
 
 ### cc-ntfy CLI
