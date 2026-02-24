@@ -1,0 +1,20 @@
+{
+    "env": {
+        "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+        "ENABLE_TOOL_SEARCH": "auto:5",
+        "MAX_THINKING_TOKENS": "10000",
+        "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
+        "MCP_TIMEOUT": "300000",
+        "MCP_TOOL_TIMEOUT": "300000",
+        "BASH_DEFAULT_TIMEOUT_MS": "1800000",
+        "BASH_MAX_TIMEOUT_MS": "7200000"
+    },
+    "model": "haiku",
+    "enabledPlugins": {
+        "context7@claude-plugins-official": true,
+        "everything-claude-code@everything-claude-code": true
+    },
+    "alwaysThinkingEnabled": false,
+    "autoUpdatesChannel": "latest",
+    "skipDangerousModePermissionPrompt": true
+}
