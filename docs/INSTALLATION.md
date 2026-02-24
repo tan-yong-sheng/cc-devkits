@@ -1,72 +1,50 @@
 # Installation Guide
 
-This document covers how to install and set up `cc-devkits`.
+This document covers how to install and set up `cc-devkits` as a Claude Code plugin.
 
-## 📦 Published Package
+## 🚀 Quick Install
 
-A single unified package is available on **npmjs.com**:
-
-| Package | Description | Version |
-|---------|-------------|---------|
-| [@tan-yong-sheng/cc-devkits](https://www.npmjs.com/package/@tan-yong-sheng/cc-devkits) | Google Search, web scraping, and push notifications | 2.0.0 |
-
-## 🚀 Install from npm
-
-No authentication required for public packages on npmjs.com:
+Install directly via Claude Code:
 
 ```bash
-# Install globally
-npm install -g @tan-yong-sheng/cc-devkits
+# Add marketplace (one-time)
+/plugin marketplace add tan-yong-sheng/cc-devkits
 
-# Verify installation
-cc-serper --help
-cc-ntfy --help
+# Install plugin
+/plugin install cc-devkits@tan-yong-sheng
 ```
 
-This provides two CLI commands:
-- `cc-serper` - Google Search and web scraping
-- `cc-ntfy` - Push notifications via ntfy
+## 📋 What's Included
 
-## 📚 Library Usage
+After installation, you get:
 
-Install as a dependency in your project:
+- **ntfy Hooks** - Push notifications for Claude Code events
+- **Serper Skills** - Web search and scraping via skill invocation
+
+## 🔧 Configuration
+
+### ntfy Notifications (Optional)
+
+Set environment variables for push notifications:
 
 ```bash
-npm install @tan-yong-sheng/cc-devkits
+export NTFY_TOPIC="your-topic"
+export NTFY_API_KEY="your-api-key"  # if using private server
 ```
 
-Import specific modules:
+### Serper API Key (Required for search/scrape)
 
-```typescript
-// Core utilities
-import { retry, randomUserAgent } from '@tan-yong-sheng/cc-devkits';
-
-// Serper (Google Search & scraping)
-import { search, scrape } from '@tan-yong-sheng/cc-devkits/serper';
-
-// ntfy (push notifications)
-import { send, sendWithDedupe } from '@tan-yong-sheng/cc-devkits/ntfy';
-```
-
-## 🛠️ Build from Source
-
-For development or contributing:
+Get a free key at https://serper.dev (2,500 searches/month):
 
 ```bash
-git clone https://github.com/tan-yong-sheng/cc-devkits.git
-cd cc-devkits
-npm install
-npm run build
-
-# Link for global CLI usage
-npm link
-
-# Test
-cc-serper --help
-cc-ntfy --help
+export SERPER_API_KEY="your-key-here"
+# or multiple keys for rotation:
+export SERPER_API_KEYS="key1;key2;key3"
 ```
+
+Or create `.env` files (see [Environment Variables](./ENVIRONMENT.md)).
 
 ## 🔧 Next Steps
 
 - **[Environment Variables](./ENVIRONMENT.md)** - Configure API keys
-- **[Development Guide](./DEVELOPMENT.md)** - Contributing guidelines
+- **[Architecture](../AGENTS.md)** - Plugin architecture overview

@@ -1,12 +1,11 @@
 # cc-devkits
 
-A Claude Code plugin providing ntfy notifications, Serper web search/scraping skills, and AI Vision MCP integration.
+A Claude Code plugin providing ntfy notifications and Serper web search/scraping skills.
 
 ## 🚀 Quick Start
 
-Get up and running in under 2 minutes:
+### Install the Plugin
 
-### Step 1: Install the Plugin
 ```bash
 # Add marketplace
 /plugin marketplace add tan-yong-sheng/cc-devkits
@@ -15,20 +14,14 @@ Get up and running in under 2 minutes:
 /plugin install cc-devkits@tan-yong-sheng
 ```
 
-### Step 2: Install the CLI Tools
-Install the unified cc-devkits package from npm:
+### Set up API Keys
 
-```bash
-npm install -g @tan-yong-sheng/cc-devkits
-```
-
-### Step 3: Set up API Keys
-- **Serper API Key**: Get a free key at https://serper.dev (2,500 searches/month)
+- **Serper API Key** (for web search): Get a free key at https://serper.dev (2,500 searches/month)
   ```bash
   export SERPER_API_KEY="your-key-here"
   ```
 
-- **ntfy (optional)**: Configure for push notifications
+- **ntfy** (optional, for notifications):
   ```bash
   export NTFY_TOPIC="your-topic"
   export NTFY_API_KEY="your-api-key"  # if using private server
@@ -38,56 +31,29 @@ npm install -g @tan-yong-sheng/cc-devkits
 
 - **ntfy Hooks** - Get push notifications for Claude Code events (Session started, Task completed, etc.)
 - **Serper Skills** - Google Search and web scraping with markdown extraction
-- **AI Vision MCP** - Image and video analysis, object detection, and visual comparison
+
+## Usage
+
+### Serper Skill
+
+The skill activates automatically when you ask Claude to search the web:
+
+```
+You: Search for "TypeScript best practices"
+Claude: [Uses serper skill automatically]
+```
+
+Or reference it directly:
+```
+@serper search --query "AI news" --num 5
+```
 
 ## 📚 Documentation
 
-Detailed documentation has been moved to the `docs/` directory:
-
-- **[Installation Guide](./docs/INSTALLATION.md)** - How to install from npm
+- **[Installation Guide](./docs/INSTALLATION.md)** - How to install the plugin
 - **[Environment Variables](./docs/ENVIRONMENT.md)** - Required API keys and configuration
-- **[Development Guide](./docs/DEVELOPMENT.md)** - Project structure and contributing instructions
-- **[Publishing Guide](./PUBLISHING.md)** - Guide for publishing to npmjs.com
-- **[Architecture](./AGENTS.md)** - Deep dive into the package architecture
-
-## Usage Examples
-
-### cc-serper CLI
-```bash
-# Search Google
-cc-serper search --query "TypeScript best practices" --gl us --hl en --num 10
-
-# Scrape webpage with markdown
-cc-serper scrape --url "https://example.com" --markdown
-
-# JSON output for scripting
-cc-serper search --query "AI news" --json | jq '.organic[].title'
-```
-
-### cc-ntfy CLI
-```bash
-# Send notification
-cc-ntfy --title "Build Complete" --message "All tests passed" --priority high
-
-# With emoji and click action
-cc-ntfy --title "PR Opened" --message "New pull request" --tags bell --click "https://github.com/..."
-```
-
-### Library Usage
-```typescript
-// Import specific modules
-import { search, scrape } from '@tan-yong-sheng/cc-devkits/serper';
-import { send } from '@tan-yong-sheng/cc-devkits/ntfy';
-
-// Search Google
-const results = await search('TypeScript best practices', { num: 10 });
-
-// Scrape webpage
-const page = await scrape('https://example.com', { markdown: true });
-
-// Send notification
-await send({ title: 'Done', message: 'Task complete', priority: 'high' });
-```
+- **[Development Guide](./docs/DEVELOPMENT.md)** - Project structure and contributing
+- **[Architecture](./AGENTS.md)** - Deep dive into the plugin architecture
 
 ## License
 
@@ -99,7 +65,6 @@ tan-yong-sheng
 
 ## Resources
 
-- **npm Package**: https://www.npmjs.com/package/@tan-yong-sheng/cc-devkits
 - **Serper API**: https://serper.dev
 - **ntfy**: https://ntfy.sh
 - **Claude Code**: https://claude.com/code
