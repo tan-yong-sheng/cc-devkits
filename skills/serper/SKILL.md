@@ -1,155 +1,115 @@
 ---
 name: serper
-description: Web Search and web scraping via Serper API - TypeScript implementation with retry and jitter. Use when you need to search the web, scrape webpages, or gather information from the web. Supports advanced search operators (site:, filetype:, date filters), regional/language targeting, and markdown extraction.
-homepage: https://serper.dev
-metadata: {"openclaw":{"emoji":"🔍","requires":{"bins":["node"],"env":["SERPER_API_KEY"]},"primaryEnv":"SERPER_API_KEY"}}
+description: Search the web or scrape webpages via Serper using the plugin runtime script at skills/serper/scripts/run-serper.js.
 ---
 
-# 🔍 Serper
+# Serper Skill
 
-*Search Google, Scrape web, Go fast*
+This skill follows a **plugin-first, script-first** runtime model.
 
-TypeScript Google Search and web scraping with built-in retry, exponential backoff, jitter, and user-agent rotation.
-
-## Setup
-
-### Install from npm
+Canonical runtime entrypoint (Claude resolves paths relative to skill location):
 
 ```bash
-npm install -g @tan-yong-sheng/cc-devkits
+node ./scripts/run-serper.js
 ```
 
-This installs the `cc-serper` CLI command.
+Use this skill when you need:
+- web search for current information
+- webpage extraction from a URL
+- structured JSON output for further processing
 
-### API Key Setup
+## Process (scheduler-style, adapted for on-demand API calls)
 
-Get your API key from https://serper.dev (2500 free searches/month).
-
-**RECOMMENDED: Define SERPER_API_KEY as global environment variable:**
-```bash
-# Add to ~/.bashrc or ~/.zshrc
-export SERPER_API_KEY="your-api-key-here"
-```
-
-**Security Note:** Using global environment variables is more secure as the key never appears in command history or chat transcripts.
-
-## Quick Start
-
-1. **Web search (Malaysia news):**
-```bash
-cc-serper search --query "Malaysia news after:2026-01-28" --gl my --hl en --num 10
-```
-
-2. **Scrape webpage:**
-```bash
-cc-serper scrape --url "https://example.com" --markdown
-```
-
-3. **JSON output for scripting:**
-```bash
-cc-serper search --query "AI" --json | jq '.organic[].title'
-```
+1. Determine operation: `search` or `scrape`.
+2. Validate required input:
+   - search: `--query`
+   - scrape: `--url`
+3. Execute the runtime script using the relative path.
+4. Return JSON output directly.
+5. Surface clear API/network/rate-limit errors.
 
 ## Commands
 
 ### Search
+
 ```bash
-cc-serper search --query <query> [options]
+node ./scripts/run-serper.js search \
+  --query "{{query}}" \
+  [--gl us] \
+  [--hl en] \
+  [--num 10] \
+  [--page 1] \
+  [--location "{{location}}"] \
+  [--timeout 30000]
 ```
 
-**Options:**
-- `-n, --num <number>` - Results count (default: 10)
-- `-g, --gl <code>` - Country code (default: us)
-- `-l, --hl <code>` - Language code (default: en)
-- `--location <location>` - Geographic location
-- `--page <number>` - Page number (default: 1)
-- `-j, --json` - Raw JSON output
-- `--retries <number>` - Retry attempts (default: 3)
-
-**Examples:**
-```bash
-# Regional search
-cc-serper search --query "restaurants" --gl my --hl en --location "Kuala Lumpur"
-
-# Date-filtered news
-cc-serper search --query "Malaysia news after:2026-01-28 before:2026-01-30" --gl my
-
-# Site-specific
-cc-serper search --query "tutorial site:github.com"
-
-# File type
-cc-serper search --query "report filetype:pdf"
-```
+Options:
+- `--query` (required): search query string
+- `--gl` (optional): country code, default `us`
+- `--hl` (optional): language code, default `en`
+- `--num` (optional): number of results, default `10`, max `100`
+- `--page` (optional): page number, default `1`
+- `--location` (optional): location context
+- `--timeout` (optional): timeout in milliseconds, default `30000`
 
 ### Scrape
+
 ```bash
-cc-serper scrape --url <url> [options]
+node ./scripts/run-serper.js scrape \
+  --url "{{url}}" \
+  [--markdown] \
+  [--timeout 30000]
 ```
 
-**Options:**
-- `-m, --markdown` - Include markdown
-- `-j, --json` - Raw JSON output
-- `--retries <number>` - Retry attempts (default: 3)
+Options:
+- `--url` (required): target URL
+- `--markdown` (optional): request markdown content
+- `--timeout` (optional): timeout in milliseconds, default `30000`
 
-**Examples:**
+## Environment
+
+Set one of:
+
 ```bash
-cc-serper scrape --url "https://docs.example.com" --markdown
-cc-serper scrape --url "https://blog.com" --json | jq -r '.text'
+SERPER_API_KEY=your_api_key_here
+# or
+SERPER_API_KEYS=key1;key2;key3
 ```
 
-## Search Operators
+Env resolution precedence:
+1. `process.env`
+2. `.claude/skills/serper/.env`
+3. `.claude/.env`
+4. project `.env`
+5. `~/.claude/.env`
 
-| Operator | Usage | Example |
-|----------|-------|---------|
-| `site:` | Limit to domain | `"docs site:github.com"` |
-| `filetype:` | File type filter | `"guide filetype:pdf"` |
-| `after:` | Date after (YYYY-MM-DD) | `"news after:2026-01-28"` |
-| `before:` | Date before | `"news before:2026-01-30"` |
-| `"exact"` | Exact phrase | `'"machine learning"'` |
-| `-exclude` | Exclude terms | `"python -snake"` |
-| `OR` | Alternatives | `"tutorial OR guide"` |
+## Output
 
-## Response Format
+Commands return JSON to stdout.
 
-### Search
-```json
-{
-  "searchParameters": {"q": "query", "gl": "us", "hl": "en"},
-  "organic": [
-    {
-      "title": "Page Title",
-      "link": "https://example.com",
-      "snippet": "Description...",
-      "position": 1
-    }
-  ],
-  "knowledgeGraph": {"title": "...", "description": "..."},
-  "peopleAlsoAsk": [{"question": "...", "snippet": "..."}],
-  "relatedSearches": [{"query": "..."}]
-}
+Search response typically includes:
+- `organic[]`
+- `knowledgeGraph`
+- `answerBox`
+- `relatedSearches[]`
+
+Scrape response typically includes:
+- `text`
+- `markdown`
+- `metadata`
+- `links[]`
+- `images[]`
+
+## Error Handling
+
+- `401`: invalid API key
+- `429`: rate limit exceeded
+- timeout/network errors: connectivity or remote latency issues
+- missing required args: usage/help output
+
+## Examples
+
+```bash
+node ./scripts/run-serper.js search --query "TypeScript best practices" --num 5
+node ./scripts/run-serper.js scrape --url "https://example.com" --markdown
 ```
-
-### Scrape
-```json
-{
-  "text": "Plain text content...",
-  "markdown": "# Markdown content...",
-  "metadata": {"title": "...", "description": "..."}
-}
-```
-
-## Features
-
-- ✅ Retry with exponential backoff (1s → 2s → 4s)
-- ✅ Random jitter (100-500ms)
-- ✅ User-Agent rotation (4 realistic User Agents)
-- ✅ Smart error handling (auth errors don't retry)
-- ✅ TypeScript with type safety
-- ✅ Compiled to JavaScript for Node.js
-
-## Rate Limits
-
-- **Free Plan:** 2,500 searches/month
-- **Paid Plan:** $50/month for 5,000 searches
-
-Dashboard: https://serper.dev/dashboard

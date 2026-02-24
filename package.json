@@ -6,7 +6,6 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "cc-serper": "dist/cli/serper.js",
     "cc-ntfy": "dist/cli/ntfy.js"
   },
   "exports": {
@@ -14,11 +13,6 @@
       "import": "./dist/lib/index.js",
       "require": "./dist/lib/index.js",
       "types": "./dist/lib/index.d.ts"
-    },
-    "./serper": {
-      "import": "./dist/serper/index.js",
-      "require": "./dist/serper/index.js",
-      "types": "./dist/serper/index.d.ts"
     },
     "./ntfy": {
       "import": "./dist/ntfy/index.js",
@@ -37,9 +31,6 @@
   "keywords": [
     "claude-code",
     "devkits",
-    "serper",
-    "google-search",
-    "web-scraping",
     "ntfy",
     "notifications",
     "push-notifications"

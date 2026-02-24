@@ -1,332 +1,135 @@
-# cc-devkits Package Architecture
+# cc-devkits Plugin Architecture
 
-This document describes the unified package architecture for cc-devkits.
+This document defines the architecture for **cc-devkits as a Claude Code plugin** with platform-agnostic script execution.
 
 ## Overview
 
-cc-devkits is now a **single unified npm package** (`@tan-yong-sheng/cc-devkits`) that provides:
-- Google Search and web scraping via Serper API
-- Push notifications via ntfy
-- Claude Code hooks for notifications
+cc-devkits provides:
+- Serper-based web search and web scraping skill support
+- ntfy-based Claude Code hook notifications
+- Cross-platform execution for macOS, Linux, and Windows
 
-## Package Registry
+## Plugin-First Architecture
 
-Published to **npmjs.com** (public registry):
+This repository is treated as a Claude Code plugin system.
 
-```bash
-npm install -g @tan-yong-sheng/cc-devkits
-```
+### Key Principle
 
-This provides two CLI commands:
-- `cc-serper` - Google Search and web scraping
-- `cc-ntfy` - Push notifications
+All operational behavior is driven by:
+- plugin metadata (`plugin.json`, `.claude-plugin/plugin.json`)
+- hooks (`hooks/hooks.json`)
+- skills (`skills/**/SKILL.md` + `skills/**/scripts/*`)
+
+Installation medium is not part of architecture guidance in this document.
 
 ## Directory Structure
 
-```
+```text
 cc-devkits/
-├── src/
-│   ├── lib/                    # Core utilities (internal)
-│   │   ├── index.ts            # Main exports
-│   │   ├── http.ts             # HTTP request utilities
-│   │   ├── retry.ts            # Retry with exponential backoff
-│   │   ├── cli.ts              # CLI argument parsing
-│   │   ├── user-agent.ts       # User agent rotation
-│   │   ├── anonymize.ts        # API key redaction
-│   │   ├── deduplicate.ts      # Deduplication logic
-│   │   ├── rotate.ts           # API key rotation
-│   │   └── types.ts            # Shared TypeScript types
-│   │
-│   ├── serper/                 # Serper library
-│   │   ├── index.ts            # search(), scrape() functions
-│   │   └── types.ts            # Serper types
-│   │
-│   ├── ntfy/                   # ntfy library
-│   │   ├── index.ts            # send(), sendWithDedupe() functions
-│   │   └── types.ts            # ntfy types
-│   │
-│   ├── cli/
-│   │   ├── serper.ts           # cc-serper CLI entry point
-│   │   └── ntfy.ts             # cc-ntfy CLI entry point
-│   │
-│   ├── hooks/
-│   │   └── ntfy/
-│   │       └── notify.ts       # Claude Code hook script
-│   │
-│   └── skills/
-│       └── serper/
-│           └── scripts/
-│               └── serper.ts   # Legacy skill script
-│
 ├── hooks/
-│   └── hooks.json              # Claude Code hook configuration
+│   ├── hooks.json                  # Hook definitions
+│   └── README.md
 │
 ├── skills/
 │   └── serper/
-│       └── SKILL.md            # Skill documentation
+│       ├── SKILL.md                # Skill behavior and usage
+│       ├── .env.example            # Required env vars for skill runtime
+│       └── scripts/
+│           └── run-serper.js       # Cross-platform script runner
 │
-├── dist/                       # Compiled output
-│   ├── lib/                    # Core utilities
-│   ├── serper/                 # Serper library
-│   ├── ntfy/                   # ntfy library
-│   ├── cli/                    # CLI binaries
-│   └── hooks/                  # Hook scripts
+├── src/
+│   ├── hooks/ntfy/notify.ts        # Hook source implementation
+│   ├── serper/                     # Serper library source
+│   ├── ntfy/                       # ntfy library source
+│   ├── lib/                        # Shared utilities
+│   └── cli/                        # Internal CLI entrypoints
 │
-├── package.json                # Single package config
-├── tsconfig.json               # TypeScript config
-└── README.md                   # Documentation
+├── .claude-plugin/
+│   ├── plugin.json                 # Plugin metadata for marketplace/plugin tooling
+│   └── README.md
+│
+├── plugin.json                     # Root plugin descriptor
+└── AGENTS.md
 ```
 
-## Package Exports
+## Platform-Agnostic Proposal
 
-The package uses conditional exports:
+Use the following model for all current and future skills/hooks.
 
-```json
-{
-  "exports": {
-    ".": {
-      "import": "./dist/lib/index.js",
-      "types": "./dist/lib/index.d.ts"
-    },
-    "./serper": {
-      "import": "./dist/serper/index.js",
-      "types": "./dist/serper/index.d.ts"
-    },
-    "./ntfy": {
-      "import": "./dist/ntfy/index.js",
-      "types": "./dist/ntfy/index.d.ts"
-    }
-  }
-}
-```
+### 1) Use Node.js scripts for runtime behavior
 
-## CLI Binaries
+- Prefer Node scripts for hooks and skill automation.
+- Avoid OS-specific shell-only workflows for core logic.
 
-```json
-{
-  "bin": {
-    "cc-serper": "dist/cli/serper.js",
-    "cc-ntfy": "dist/cli/ntfy.js"
-  }
-}
-```
+### 2) Resolve paths via plugin root and Node path utilities
 
-## Usage Examples
+- Primary resolution: `CLAUDE_PLUGIN_ROOT`
+- Fallback: relative path from current workspace
+- Build paths with `path.join(...)`, never hardcoded separators.
 
-### CLI Commands
+### 3) Keep script execution OS-safe
 
-```bash
-# Search Google
-cc-serper search --query "AI news" --gl us --hl en --num 10
+- Prefer `spawnSync`/`spawn` with argument arrays over shell command strings.
+- Avoid command construction that requires shell interpolation.
 
-# Scrape webpage
-cc-serper scrape --url "https://example.com" --markdown
+### 4) Add explicit platform detection where needed
 
-# Send notification
-cc-ntfy --title "Done" --message "Task complete" --priority high
-```
+- `process.platform === 'win32'` for Windows logic
+- `process.platform === 'darwin'` for macOS logic
+- `process.platform === 'linux'` for Linux logic
 
-### Library Imports
+Use these only when behavior truly differs.
 
-```typescript
-// Import core utilities
-import { retry, randomUserAgent } from '@tan-yong-sheng/cc-devkits';
+### 5) Handle command existence checks by OS
 
-// Import Serper
-import { search, scrape } from '@tan-yong-sheng/cc-devkits/serper';
+- Windows: `where`
+- Unix-like: `which`
 
-// Import ntfy
-import { send, sendWithDedupe } from '@tan-yong-sheng/cc-devkits/ntfy';
-```
+Wrap this in a helper for reuse.
 
-## Core Library (`src/lib/`)
+### 6) Use environment loading with deterministic precedence
 
-### HTTP Utilities
+For skill runtime configuration:
+1. `process.env`
+2. `.claude/skills/<skill>/.env`
+3. `.claude/.env`
+4. project `.env`
+5. `~/.claude/.env`
 
-```typescript
-// http.ts
-export interface RequestOptions {
-  url: string;
-  method?: 'GET' | 'POST';
-  headers?: Record<string, string>;
-  body?: string;
-  timeout?: number;
-  apiKey?: string;
-  apiKeyHeader?: string;
-}
+## Serper Skill Runtime Contract
 
-export function makeRequest(options: RequestOptions): Promise<string>;
-export function rawRequest(options: RequestOptions): Promise<HttpResult>;
-```
+`skills/serper/scripts/run-serper.js` is the single runtime entrypoint and should:
 
-### Retry Logic
+- load and validate Serper credentials
+- rotate keys when multiple keys are configured
+- detect platform safely
+- resolve executable paths safely
+- run search/scrape actions with structured error handling
 
-```typescript
-// retry.ts
-export interface RetryOptions<T> {
-  fn: () => Promise<T>;
-  maxAttempts?: number;
-  initialDelay?: number;
-  maxDelay?: number;
-  jitter?: number;
-  onRetry?: (error: Error, attempt: number, delay: number) => void;
-}
+## Hooks Contract
 
-export async function retry<T>(options: RetryOptions<T>): Promise<T>;
-```
+`hooks/hooks.json` should execute scripts using plugin-root-resolved paths and Node.
 
-### CLI Utilities
+Rules:
+- no hardcoded absolute machine paths
+- no OS-specific path separators in static strings
+- no shell-only assumptions
 
-```typescript
-// cli.ts
-export interface ArgOption {
-  type: 'string' | 'number' | 'boolean';
-  short?: string;
-  long?: string;
-  required?: boolean;
-  description?: string;
-  default?: string | number | boolean;
-}
+## Migration Guidance for Existing Files
 
-export function parseArgs<T>(
-  args: string[],
-  options: Record<string, ArgOption>
-): T;
-```
+When updating existing hooks/skills:
 
-### User Agent Rotation
+1. Replace absolute script paths with plugin-root-relative resolution.
+2. Move script logic into Node files under `skills/<name>/scripts` or `scripts/hooks`.
+3. Remove platform-specific shell branching from hook command strings.
+4. Keep behavior in one script entrypoint per feature where practical.
 
-```typescript
-// user-agent.ts
-export const USER_AGENTS: readonly string[];
-export function randomUserAgent(): string;
-export function rotateUserAgent(): string;
-```
+## Definition of Done (Platform-Agnostic)
 
-### API Key Anonymization
+A skill/hook change is complete when:
 
-```typescript
-// anonymize.ts
-export function anonymizeKey(key: string, visibleChars?: number): string;
-export function redactApiKey(key: string, replacement?: string): string;
-```
-
-### Deduplication
-
-```typescript
-// deduplicate.ts
-export function checkDedupe(key: string, cooldownSeconds: number): boolean;
-export function createDedupeChecker(options: DedupeOptions): DedupeChecker;
-```
-
-### Key Rotation
-
-```typescript
-// rotate.ts
-export function rotateKeys(envVar: string, stateKey: string): string;
-```
-
-## Adding New Features
-
-To add a new feature to the consolidated package:
-
-1. **Add library code** in `src/<feature>/`
-   - `index.ts` - Main exports
-   - `types.ts` - TypeScript types
-
-2. **Add CLI** in `src/cli/<feature>.ts`
-   - Create CLI entry point
-   - Update `package.json` bin field
-
-3. **Add export** in `package.json`
-   ```json
-   "exports": {
-     "./<feature>": {
-       "import": "./dist/<feature>/index.js",
-       "types": "./dist/<feature>/index.d.ts"
-     }
-   }
-   ```
-
-4. **Build and test**
-   ```bash
-   npm run build
-   node dist/cli/<feature>.js --help
-   ```
-
-## Publishing
-
-### Automated Publishing via GitHub Actions
-
-Create and push a version tag:
-
-```bash
-git tag v2.0.0
-git push origin v2.0.0
-```
-
-This triggers the `.github/workflows/publish.yml` workflow which:
-1. Builds the package
-2. Tests CLI functionality
-3. Publishes to npmjs.com
-
-### Manual Publishing
-
-```bash
-# Build
-npm run build
-
-# Test locally
-npm link
-cc-serper --help
-cc-ntfy --help
-
-# Publish to npmjs.com
-npm login
-npm publish --access public
-```
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `SERPER_API_KEY` | API key for Serper.dev |
-| `SERPER_API_KEYS` | Multiple keys for rotation (semicolon-separated) |
-| `NTFY_BASE_URL` | ntfy server URL (default: https://ntfy.sh) |
-| `NTFY_TOPIC` | ntfy topic |
-| `NTFY_API_KEY` | ntfy authentication token |
-
-## Version Compatibility
-
-| Package | Required Node |
-|---------|---------------|
-| `@tan-yong-sheng/cc-devkits` | >=18.0.0 |
-
-## Migration from v1.x
-
-If you were using the old separate packages:
-
-**Before (v1.x):**
-```bash
-npm install -g @tan-yong-sheng/serper @tan-yong-sheng/ntfy
-serper search "query"
-ntfy --title "Test" --message "Hello"
-```
-
-**After (v2.x):**
-```bash
-npm install -g @tan-yong-sheng/cc-devkits
-cc-serper search --query "query"
-cc-ntfy --title "Test" --message "Hello"
-```
-
-Library imports:
-```typescript
-// Before
-import { search } from '@tan-yong-sheng/serper';
-import { send } from '@tan-yong-sheng/ntfy';
-
-// After
-import { search } from '@tan-yong-sheng/cc-devkits/serper';
-import { send } from '@tan-yong-sheng/cc-devkits/ntfy';
-```
+- it runs on macOS, Linux, and Windows without path edits
+- no hardcoded user/machine absolute paths remain
+- script execution uses safe process APIs
+- docs reference plugin-root path strategy
+- runtime env precedence is documented and implemented
