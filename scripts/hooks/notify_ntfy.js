@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Claude Code ntfy Hook - TypeScript Implementation
+ * Claude Code ntfy Hook - JavaScript Implementation
  * Sends notifications via ntfy.sh when Claude Code events occur
  *
  * This hook reads Claude Code's stdin (JSON with session info) to extract:
@@ -9,35 +9,16 @@
  *   - model: The Claude model being used
  */
 
-import https from 'node:https';
-import http from 'node:http';
-import { createHash } from 'node:crypto';
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { URL } from 'node:url';
-
-interface NtfyOptions {
-  title?: string;
-  message?: string;
-  priority?: 'min' | 'low' | 'default' | 'high' | 'max' | 'urgent';
-  emoji?: string;
-  tags?: string;
-  click?: string;
-  attach?: string;
-  timeout?: number;
-  includeCwd?: 'auto' | 'yes' | 'no';
-}
-
-interface ClaudeContext {
-  cwd?: string;
-  session_id?: string;
-  model?: string;
-  [key: string]: unknown;
-}
+const https = require('https');
+const http = require('http');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const { URL } = require('url');
 
 // Configuration from environment
 const NTFY_URL = process.env.NTFY_BASE_URL || process.env.NTFY_URL || 'https://ntfy.sh';
-const NTFY_TOPIC = process.env.NTFY_TOPIC || 'openclaw';
+const NTFY_TOPIC = process.env.NTFY_TOPIC || '';
 const NTFY_TOKEN = process.env.NTFY_API_KEY || process.env.NTFY_TOKEN || '';
 const COOLDOWN_SECONDS = 12;
 const DEDUPE_DIR = '/tmp/.ntfy_hook_dedupe';
@@ -45,8 +26,8 @@ const DEDUPE_DIR = '/tmp/.ntfy_hook_dedupe';
 /**
  * Parse command line arguments
  */
-function parseArgs(args: string[]): NtfyOptions {
-  const options: NtfyOptions = {
+function parseArgs(args) {
+  const options = {
     priority: 'default',
     timeout: 10,
     includeCwd: 'auto'
@@ -62,7 +43,7 @@ function parseArgs(args: string[]): NtfyOptions {
         options.message = args[++i];
         break;
       case '--priority':
-        options.priority = args[++i] as NtfyOptions['priority'];
+        options.priority = args[++i];
         break;
       case '--emoji':
         options.emoji = args[++i];
@@ -99,7 +80,7 @@ function parseArgs(args: string[]): NtfyOptions {
 /**
  * Read stdin to get Claude Code hook input (JSON)
  */
-async function readStdin(): Promise<ClaudeContext> {
+function readStdin() {
   return new Promise((resolve) => {
     if (process.stdin.isTTY) {
       // stdin is a TTY - running interactively, not from Claude Code hook
@@ -114,7 +95,7 @@ async function readStdin(): Promise<ClaudeContext> {
 
     process.stdin.on('end', () => {
       try {
-        const context = JSON.parse(data) as ClaudeContext;
+        const context = JSON.parse(data);
         resolve(context);
       } catch {
         resolve({});
@@ -129,17 +110,17 @@ async function readStdin(): Promise<ClaudeContext> {
 /**
  * Check deduplication - prevent sending same message within cooldown period
  */
-function checkDedupe(title: string, message: string): boolean {
-  if (!existsSync(DEDUPE_DIR)) {
-    mkdirSync(DEDUPE_DIR, { recursive: true });
+function checkDedupe(title, message) {
+  if (!fs.existsSync(DEDUPE_DIR)) {
+    fs.mkdirSync(DEDUPE_DIR, { recursive: true });
   }
 
-  const key = createHash('md5').update(`${title}:${message}`).digest('hex');
-  const lastFile = join(DEDUPE_DIR, key);
+  const key = crypto.createHash('md5').update(`${title}:${message}`).digest('hex');
+  const lastFile = path.join(DEDUPE_DIR, key);
   const now = Math.floor(Date.now() / 1000);
 
-  if (existsSync(lastFile)) {
-    const lastTime = parseInt(readFileSync(lastFile, 'utf-8'), 10);
+  if (fs.existsSync(lastFile)) {
+    const lastTime = parseInt(fs.readFileSync(lastFile, 'utf-8'), 10);
     const elapsed = now - lastTime;
     if (elapsed < COOLDOWN_SECONDS) {
       console.error(`[ntfy] Skipped duplicate notification (${elapsed}s ago, cooldown: ${COOLDOWN_SECONDS}s)`);
@@ -147,18 +128,14 @@ function checkDedupe(title: string, message: string): boolean {
     }
   }
 
-  writeFileSync(lastFile, now.toString());
+  fs.writeFileSync(lastFile, now.toString());
   return true;
 }
 
 /**
  * Build enhanced message with project info
  */
-function buildEnhancedMessage(
-  message: string,
-  context: ClaudeContext,
-  includeCwd: 'auto' | 'yes' | 'no'
-): string {
+function buildEnhancedMessage(message, context, includeCwd) {
   let shouldInclude = false;
 
   switch (includeCwd) {
@@ -198,7 +175,7 @@ function buildEnhancedMessage(
 /**
  * Send notification to ntfy
  */
-async function sendNotification(options: NtfyOptions, context: ClaudeContext): Promise<void> {
+function sendNotification(options, context) {
   if (!options.title || !options.message) {
     throw new Error('Title and message are required');
   }
@@ -206,7 +183,7 @@ async function sendNotification(options: NtfyOptions, context: ClaudeContext): P
   const enhancedMessage = buildEnhancedMessage(options.message, context, options.includeCwd || 'auto');
 
   // Build headers
-  const headers: Record<string, string> = {
+  const headers = {
     'Title': options.title,
     'Priority': options.priority || 'default'
   };
@@ -279,7 +256,7 @@ async function sendNotification(options: NtfyOptions, context: ClaudeContext): P
 /**
  * Main function
  */
-async function main(): Promise<void> {
+async function main() {
   try {
     const args = process.argv.slice(2);
     const options = parseArgs(args);
@@ -293,7 +270,7 @@ async function main(): Promise<void> {
     const context = await readStdin();
 
     // Check deduplication
-    if (!checkDedupe(options.title!, options.message!)) {
+    if (!checkDedupe(options.title, options.message)) {
       process.exit(0);
     }
 
